@@ -1,0 +1,13 @@
+[package]
+name = "rust-roadmap"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+# Web Framework
+leptos = { version = "0.6", features = ["csr"] }
+
+# Logging & Error handling
+console_error_panic_hook = "0.1"
+log = "0.4"
+console_log = "1"
