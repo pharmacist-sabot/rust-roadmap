@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Rust Roadmap</title>
+
+        <script src="https://cdn.tailwindcss.com"></script>
+        <link
+            href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap"
+            rel="stylesheet"
+        />
+
+        <style>
+            body {
+                font-family: "Inter", sans-serif;
+            }
+            .drawer-scroll::-webkit-scrollbar {
+                width: 8px;
+            }
+            .drawer-scroll::-webkit-scrollbar-track {
+                background: #f1f1f1;
+            }
+            .drawer-scroll::-webkit-scrollbar-thumb {
+                background: #888;
+                border-radius: 4px;
+            }
+            .drawer-scroll::-webkit-scrollbar-thumb:hover {
+                background: #555;
+            }
+        </style>
+
+        
+<script type="module">
+import init, * as bindings from '/rust-roadmap/rust-roadmap-886d9c5a295fef78.js';
+const wasm = await init({ module_or_path: '/rust-roadmap/rust-roadmap-886d9c5a295fef78_bg.wasm' });
+
+
+window.wasmBindings = bindings;
+
+
+dispatchEvent(new CustomEvent("TrunkApplicationStarted", {detail: {wasm}}));
+
+</script>
+    <link rel="modulepreload" href="/rust-roadmap/rust-roadmap-886d9c5a295fef78.js" crossorigin="anonymous" integrity="sha384-pMXiiUjjD4IoXTaeQKhTWiyBCKOY6tqeh0PGtMP0LBrZrb5gdavBkSZ9XypXjSOl"><link rel="preload" href="/rust-roadmap/rust-roadmap-886d9c5a295fef78_bg.wasm" crossorigin="anonymous" integrity="sha384-vLNtd/DOq19x0Y2i1CrbnNJ4PIXFeclyWmg3cxr0PfSpw1PAcot4bxsu1xjhidb4" as="fetch" type="application/wasm"></head>
+    <body></body>
+</html>
