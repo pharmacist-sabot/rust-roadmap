@@ -23,6 +23,7 @@ jobs:
         uses: jetli/trunk-action@v0.5.0
 
       - name: Build with Trunk
+        # แก้ public-url ให้ตรงกับชื่อ repo ของคุณ (อย่าลืม / ปิดท้าย)
         run: trunk build --release --public-url "/rust-roadmap/"
 
       - name: Deploy to GitHub Pages
