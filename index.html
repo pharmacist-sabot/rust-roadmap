@@ -14,19 +14,134 @@
         <style>
             body {
                 font-family: "Inter", sans-serif;
+                background-color: #0f172a; /* Slate 900 */
+                color: #f8fafc;
+                margin: 0;
+                padding: 0;
             }
-            .drawer-scroll::-webkit-scrollbar {
-                width: 8px;
+            
+            /* Roadmap Page Layout */
+            .roadmap-page {
+                min-height: 100vh;
+                background: radial-gradient(circle at top center, #1e293b, #0f172a);
+                padding: 20px;
             }
-            .drawer-scroll::-webkit-scrollbar-track {
-                background: #f1f1f1;
+            
+            .roadmap-header {
+                text-align: center;
+                margin-bottom: 40px;
             }
-            .drawer-scroll::-webkit-scrollbar-thumb {
-                background: #888;
-                border-radius: 4px;
+            
+            .roadmap-header h1 {
+                font-size: 3rem;
+                font-weight: 800;
+                background: linear-gradient(135deg, #60a5fa, #a78bfa);
+                -webkit-background-clip: text;
+                background-clip: text;
+                -webkit-text-fill-color: transparent;
+                margin: 0 0 10px 0;
+                letter-spacing: -0.02em;
             }
-            .drawer-scroll::-webkit-scrollbar-thumb:hover {
-                background: #555;
+            
+            .roadmap-subtitle {
+                font-size: 1.2rem;
+                color: #94a3b8;
+                margin: 0;
+            }
+            
+            .roadmap-content {
+                max-width: 100%;
+                overflow-x: auto;
+                padding: 20px 0;
+            }
+            
+            /* SVG Diagram */
+            .roadmap-diagram {
+                display: block;
+                margin: 0 auto;
+                max-width: 100%;
+                height: auto;
+            }
+            
+            /* Section Headers */
+            .section-header {
+                fill: #e2e8f0;
+                font-size: 16px;
+                font-weight: 700;
+                font-family: "Inter", sans-serif;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+            }
+            
+            /* Node Base Styles */
+            .roadmap-node .node-rect {
+                fill: #1e293b;
+                stroke: #334155;
+                stroke-width: 1;
+                rx: 8px; /* Rounded corners */
+                filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.3));
+                transition: all 0.3s ease;
+            }
+            
+            .roadmap-node .node-text {
+                fill: #cbd5e1;
+                font-size: 11px;
+                font-weight: 500;
+                font-family: "Inter", sans-serif;
+                pointer-events: none;
+                text-anchor: middle; /* Center text */
+                dominant-baseline: middle;
+            }
+            
+            /* Level-based coloring (Glow accents) */
+            .level-beginner .node-rect {
+                stroke: #22c55e; /* Green */
+                stroke-width: 1.5;
+            }
+            
+            .level-intermediate .node-rect {
+                stroke: #3b82f6; /* Blue */
+                stroke-width: 1.5;
+            }
+            
+            .level-advanced .node-rect {
+                stroke: #a855f7; /* Purple */
+                stroke-width: 1.5;
+            }
+            
+            /* Node hover effects */
+            .roadmap-node:hover .node-rect {
+                fill: #334155;
+                filter: drop-shadow(0 0 8px rgba(96, 165, 250, 0.5));
+                cursor: pointer;
+                transform: translateY(-2px);
+            }
+            
+            .roadmap-node:hover .node-text {
+                fill: #ffffff;
+            }
+            
+            /* Edge Styles */
+            .roadmap-edge {
+                stroke: #475569;
+                stroke-width: 2;
+                fill: none;
+                opacity: 0.6;
+            }
+            
+            .edge-cross-section {
+                stroke: #64748b;
+                stroke-dasharray: 4, 4;
+            }
+            
+            /* Arrowhead */
+            .arrowhead-fill {
+                fill: #475569;
+            }
+            
+            /* Layers */
+            .edges-layer {
+                opacity: 1;
             }
         </style>
 

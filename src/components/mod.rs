@@ -1,2 +1,3 @@
-pub mod drawer;
-pub mod roadmap_node;
+//! UI Components.
+
+pub mod roadmap;
