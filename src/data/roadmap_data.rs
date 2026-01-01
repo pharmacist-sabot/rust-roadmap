@@ -1,7 +1,9 @@
 //! Complete roadmap data matching the PDF structure.
 
 // Internal references within the lib can still use `crate::`
-use crate::models::roadmap::{Column, Dependency, Level, Section, Topic, TopicType};
+use crate::models::roadmap::{
+    ColumnType, Dependency, LayoutZone, Level, Section, Topic, TopicType,
+};
 
 // Helper macro for cleaner data entry
 macro_rules! topic {
@@ -22,142 +24,142 @@ pub const SECTIONS: &[Section] = &[
         id: "intro_sec",
         title: "",
         order: 1,
-        column: Column::Center,
+        zone: LayoutZone::Header,
     },
     Section {
         id: "basics_sec",
         title: "",
         order: 2,
-        column: Column::Center,
+        zone: LayoutZone::Header,
     },
     Section {
         id: "error_sec",
         title: "",
         order: 3,
-        column: Column::Center,
+        zone: LayoutZone::Header,
     },
     Section {
         id: "modules_sec",
         title: "",
         order: 4,
-        column: Column::Center,
+        zone: LayoutZone::Header,
     },
     Section {
         id: "testing_sec",
         title: "",
         order: 5,
-        column: Column::Center,
+        zone: LayoutZone::Header,
     },
     Section {
         id: "traits_sec",
         title: "",
         order: 6,
-        column: Column::Center,
+        zone: LayoutZone::Header,
     },
     Section {
         id: "macros_sec",
         title: "",
         order: 7,
-        column: Column::Center,
+        zone: LayoutZone::Header,
     },
     Section {
         id: "web_sec",
         title: "",
         order: 8,
-        column: Column::Center,
+        zone: LayoutZone::Header,
     },
     Section {
         id: "async_sec",
         title: "Asynchronous Programming",
         order: 9,
-        column: Column::Center,
+        zone: LayoutZone::Header,
     }, // Yellow box, but visually wider
     // --- LEFT COLUMN ---
     Section {
         id: "syntax_group",
         title: "Syntax and Semantics",
         order: 1,
-        column: Column::Left,
+        zone: LayoutZone::Body(ColumnType::Left),
     },
     Section {
         id: "constructs_group",
         title: "Constructs",
         order: 2,
-        column: Column::Left,
+        zone: LayoutZone::Body(ColumnType::Left),
     },
     Section {
         id: "datastruct_group",
         title: "Data Structures",
         order: 3,
-        column: Column::Left,
+        zone: LayoutZone::Body(ColumnType::Left),
     },
     Section {
         id: "ownership_group",
         title: "Ownership System",
         order: 4,
-        column: Column::Left,
+        zone: LayoutZone::Body(ColumnType::Left),
     },
     Section {
         id: "advanced_group",
         title: "Advanced Topics",
         order: 5,
-        column: Column::Left,
+        zone: LayoutZone::Body(ColumnType::Left),
     },
     // --- RIGHT COLUMN ---
     Section {
         id: "intro_side",
         title: "",
         order: 1,
-        column: Column::Right,
+        zone: LayoutZone::Body(ColumnType::Right),
     },
     Section {
         id: "basics_side",
         title: "Environment Setup",
         order: 2,
-        column: Column::Right,
+        zone: LayoutZone::Body(ColumnType::Right),
     },
     Section {
         id: "error_side",
         title: "",
         order: 3,
-        column: Column::Right,
+        zone: LayoutZone::Body(ColumnType::Right),
     },
     Section {
         id: "modules_side",
         title: "",
         order: 4,
-        column: Column::Right,
+        zone: LayoutZone::Body(ColumnType::Right),
     },
     Section {
         id: "concurrency_group",
         title: "",
         order: 6,
-        column: Column::Right,
+        zone: LayoutZone::Body(ColumnType::Right),
     }, // Concurrency is yellow but on right
     Section {
         id: "traits_side",
         title: "",
         order: 7,
-        column: Column::Right,
+        zone: LayoutZone::Body(ColumnType::Right),
     },
     Section {
         id: "lifetimes_group",
         title: "Lifetimes & Borrow Checker",
         order: 8,
-        column: Column::Right,
+        zone: LayoutZone::Body(ColumnType::Right),
     }, // Yellow header/box
     Section {
         id: "eco_side",
         title: "",
         order: 9,
-        column: Column::Right,
+        zone: LayoutZone::Body(ColumnType::Right),
     },
     // --- BOTTOM / FULL WIDTH ---
     Section {
         id: "networking_group",
         title: "",
         order: 10,
-        column: Column::Full,
+        zone: LayoutZone::Footer,
     },
 ];
 

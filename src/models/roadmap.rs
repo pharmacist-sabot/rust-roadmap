@@ -23,18 +23,30 @@ impl Default for TopicType {
     }
 }
 
-/// Column position for sections in the tree-style layout.
+/// Column position within the Body zone.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
-pub enum Column {
-    /// Left column (Aligned to the Right side of the column)
+pub enum ColumnType {
     Left,
-    /// Center column (Centered)
     #[default]
     Center,
-    /// Right column (Aligned to the Left side of the column)
     Right,
-    /// Full width section spanning all columns
-    Full,
+}
+
+/// Logical zone for the section.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum LayoutZone {
+    /// Top section, centered.
+    Header,
+    /// Main split section.
+    Body(ColumnType),
+    /// Bottom section, full width.
+    Footer,
+}
+
+impl Default for LayoutZone {
+    fn default() -> Self {
+        Self::Body(ColumnType::Center)
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -42,7 +54,7 @@ pub struct Section {
     pub id: &'static str,
     pub title: &'static str,
     pub order: u8,
-    pub column: Column,
+    pub zone: LayoutZone,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]

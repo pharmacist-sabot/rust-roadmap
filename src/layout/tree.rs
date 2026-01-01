@@ -1,6 +1,7 @@
 //! Deterministic tree-style layout algorithm.
+//! Now strictly Row-based to maintain visual relationships.
 
-use crate::models::roadmap::{Column, Dependency, Section, Topic};
+use crate::models::roadmap::{ColumnType, Dependency, LayoutZone, Section, Topic};
 use std::collections::{HashMap, HashSet};
 
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -19,15 +20,15 @@ pub struct LayoutConfig {
 impl Default for LayoutConfig {
     fn default() -> Self {
         Self {
-            column_width: 350.0,   // ลดความกว้างลงหน่อยเพื่อให้เกาะกลุ่ม
-            column_spacing: 120.0, // เพิ่มระยะห่างระหว่างคอลัมน์
-            section_spacing_y: 50.0,
+            column_width: 250.0,     // Standard width
+            column_spacing: 60.0,    // Tighter spacing
+            section_spacing_y: 60.0, // More breathing room between rows
             node_width: 180.0,
             node_height: 40.0,
-            node_spacing_x: 15.0,
-            node_spacing_y: 15.0,
+            node_spacing_x: 20.0,
+            node_spacing_y: 20.0,
             margin: 50.0,
-            topics_per_row: 2, // ปกติ 2 กล่องต่อแถวสำหรับกิ่งก้าน
+            topics_per_row: 1, // Default to single stack for Side columns
         }
     }
 }
@@ -37,7 +38,7 @@ pub struct SectionPosition {
     pub section_id: &'static str,
     pub x: f64,
     pub y: f64,
-    pub width: f64, // เก็บความกว้างของ Section ไว้ด้วย
+    pub width: f64,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -56,17 +57,7 @@ pub struct LayoutResult {
     pub total_height: f64,
 }
 
-// Override column width specifically
-fn column_width(column: Column, config: &LayoutConfig) -> f64 {
-    match column {
-        Column::Center => config.node_width * 1.2, // Center is narrow (only 1 node usually)
-        Column::Full => config.column_width * 3.0 + config.column_spacing * 2.0,
-        _ => config.column_width,
-    }
-}
-
 fn topological_sort<'a>(topics: &[&'a Topic], dependencies: &[Dependency]) -> Vec<&'a Topic> {
-    // (Logic เดิม ใช้ได้เลย)
     let mut id_map: HashMap<&str, &'a Topic> = HashMap::new();
     let mut topic_ids: HashSet<&str> = HashSet::new();
     for topic in topics {
@@ -88,19 +79,19 @@ fn topological_sort<'a>(topics: &[&'a Topic], dependencies: &[Dependency]) -> Ve
         }
     }
 
-    // Stable sort logic to keep input order if possible
     let mut queue: Vec<&str> = in_degree
         .iter()
         .filter(|&(_, &d)| d == 0)
         .map(|(&id, _)| id)
         .collect();
-    // Sort to make deterministic
+
+    // Sort queue by original index to maintain stability
     let mut topic_order_map = HashMap::new();
     for (i, t) in topics.iter().enumerate() {
         topic_order_map.insert(t.id, i);
     }
     queue.sort_by_key(|id| topic_order_map.get(id).unwrap_or(&0));
-    queue.reverse(); // Pop from end
+    queue.reverse();
 
     let mut result = Vec::new();
     while let Some(u) = queue.pop() {
@@ -110,7 +101,7 @@ fn topological_sort<'a>(topics: &[&'a Topic], dependencies: &[Dependency]) -> Ve
         if let Some(neighbors) = adj.get(u) {
             let mut sorted_neighbors = neighbors.clone();
             sorted_neighbors.sort_by_key(|id| topic_order_map.get(id).unwrap_or(&0));
-            // Reverse because we reverse-sort queue later? No, just keep stable.
+            // Stable sort
 
             for &v in neighbors {
                 if let Some(d) = in_degree.get_mut(v) {
@@ -120,11 +111,10 @@ fn topological_sort<'a>(topics: &[&'a Topic], dependencies: &[Dependency]) -> Ve
                     }
                 }
             }
-            // Re-sort queue to maintain order priority
             queue.sort_by_key(|id| std::cmp::Reverse(topic_order_map.get(id).unwrap_or(&0)));
         }
     }
-    // Cycles check
+    // Add remaining
     for topic in topics {
         if !result.contains(topic) {
             result.push(*topic);
@@ -142,213 +132,142 @@ pub fn compute_layout(
     let mut section_positions = Vec::with_capacity(sections.len());
     let mut topic_positions = Vec::with_capacity(topics.len());
 
-    let mut left_sections: Vec<&Section> = sections
-        .iter()
-        .filter(|s| s.column == Column::Left)
-        .collect();
-    let mut center_sections: Vec<&Section> = sections
-        .iter()
-        .filter(|s| s.column == Column::Center)
-        .collect();
-    let mut right_sections: Vec<&Section> = sections
-        .iter()
-        .filter(|s| s.column == Column::Right)
-        .collect();
-    let mut full_sections: Vec<&Section> = sections
-        .iter()
-        .filter(|s| s.column == Column::Full)
-        .collect();
+    // Group sections by Order (Row)
+    // Key: Order Index -> Value: List of Sections
+    let mut rows: HashMap<i32, Vec<&Section>> = HashMap::new();
+    for section in sections {
+        // Footer is special, treat as Order 9999 or handle separately?
+        // Let's treat standard Header/Body zones as tiered rows.
+        let order_key: i32 = match section.zone {
+            LayoutZone::Footer => 9999,
+            _ => section.order as i32,
+        };
+        rows.entry(order_key).or_default().push(section);
+    }
 
-    left_sections.sort_by_key(|s| s.order);
-    center_sections.sort_by_key(|s| s.order);
-    right_sections.sort_by_key(|s| s.order);
-    full_sections.sort_by_key(|s| s.order);
+    let mut sorted_keys: Vec<i32> = rows.keys().cloned().collect();
+    sorted_keys.sort();
 
-    let mut left_y = config.margin;
-    let mut center_y = config.margin;
-    let mut right_y = config.margin;
+    // Determine X Base Positions
+    // Assuming symmetric 3-column layout
+    // Left Start | Center Start | Right Start
+    let center_col_width = config.node_width * 1.5; // Wider for main topics
+    let side_col_width = config.column_width;
 
-    // Config adjustments for alignment
-    // Center column starts further right to make room for left
-    let center_x_base = config.margin + config.column_width + config.column_spacing;
+    let total_width_est = side_col_width * 2.0 + center_col_width + config.column_spacing * 2.0;
 
-    // Process columns
-    let col_defs = [
-        (
-            Column::Center,
-            &center_sections,
-            &mut center_y,
-            center_x_base,
-        ),
-        (Column::Left, &left_sections, &mut left_y, config.margin),
-        (
-            Column::Right,
-            &right_sections,
-            &mut right_y,
-            center_x_base + config.node_width * 1.5 + config.column_spacing,
-        ),
-    ];
+    let left_x = config.margin;
+    let center_x = left_x + side_col_width + config.column_spacing;
+    let right_x = center_x + center_col_width + config.column_spacing;
 
-    // Note: We process them independently, but typically Center dictates the "height" of the spine.
-    // For this simple tree, independent y-growth is okay, but visual alignment across rows is hard without a grid.
-    // We will stick to independent stacking for now as it's robust.
+    let mut current_y = config.margin;
 
-    for (col_type, col_sections, current_y, start_x) in col_defs {
-        let col_w = column_width(col_type, config);
+    for key in sorted_keys {
+        let row_sections = rows.get(&key).unwrap();
 
-        for section in col_sections.iter() {
+        let mut row_max_height = 0.0;
+        let start_y = current_y;
+
+        // Sorting sections within the row by Zone usually helps: Left -> Center -> Right
+        // But we iterate simply.
+
+        for section in row_sections {
+            let (target_x, target_w, layout_mode) = match section.zone {
+                LayoutZone::Body(ColumnType::Left) => (left_x, side_col_width, ColumnType::Left),
+                LayoutZone::Body(ColumnType::Right) => (right_x, side_col_width, ColumnType::Right),
+                LayoutZone::Body(ColumnType::Center) | LayoutZone::Header => {
+                    (center_x, center_col_width, ColumnType::Center)
+                }
+                LayoutZone::Footer => (config.margin, total_width_est, ColumnType::Center), // Full width
+            };
+
+            // Layout this section
             let raw_topics: Vec<&Topic> = topics
                 .iter()
                 .filter(|t| t.section_id == section.id)
                 .collect();
             let section_topics = topological_sort(&raw_topics, dependencies);
 
-            // Calculate section height
-            // Center usually has 1 per row
-            let effective_cols = if col_type == Column::Center {
-                1
-            } else {
-                config.topics_per_row
-            };
-            let effective_rows = section_topics.len().div_ceil(effective_cols);
-
             let header_h = 30.0;
+            let is_wide_single = section.zone == LayoutZone::Footer; // Or specific logic
+            let topics_per_row = if is_wide_single {
+                4
+            } else {
+                match layout_mode {
+                    ColumnType::Center => 1,
+                    _ => config.topics_per_row, // 1 for sides usually
+                }
+            };
+
+            let rows_count = section_topics.len().div_ceil(topics_per_row);
+
             section_positions.push(SectionPosition {
                 section_id: section.id,
-                x: start_x,
-                y: *current_y,
-                width: col_w,
+                x: target_x,
+                y: start_y,
+                width: target_w,
             });
 
             for (idx, topic) in section_topics.iter().enumerate() {
-                let (row, col) = if col_type == Column::Center {
-                    (idx, 0)
-                } else {
-                    (idx / config.topics_per_row, idx % config.topics_per_row)
-                };
+                let r = idx / topics_per_row;
+                let c = idx % topics_per_row;
 
-                let mut topic_x = 0.0;
-                let topic_y = *current_y
-                    + header_h
-                    + (row as f64) * (config.node_height + config.node_spacing_y);
+                let node_y =
+                    start_y + header_h + (r as f64) * (config.node_height + config.node_spacing_y);
 
-                match col_type {
-                    Column::Left => {
-                        // Align RIGHT within the column (closest to center)
-                        // x = end_of_col - node_width - (col_reversed * spacing)
-                        // Actually, just standard grid but pushed right?
-                        // Let's do: fill from right to left visually?
-                        // Simple grid:
-                        // To align right: start_x + col_width - node_width - offset_from_right_side
-                        // Let's stick to standard left-aligned grid inside the column for simplicity,
-                        // but the column ITSELF is to the left of center.
+                // Calculate X
+                let row_nodes_count =
+                    if r == rows_count - 1 && section_topics.len() % topics_per_row != 0 {
+                        section_topics.len() % topics_per_row
+                    } else {
+                        topics_per_row
+                    };
 
-                        // BUT, to look like the PDF, the Left nodes should "hug" the center.
-                        // So if we have 1 node, it should be on the right side of the Left Column.
-                        let nodes_in_this_row = if row == effective_rows - 1
-                            && section_topics.len() % effective_cols != 0
-                        {
-                            section_topics.len() % effective_cols
-                        } else {
-                            effective_cols
-                        };
+                let row_width = (row_nodes_count as f64) * config.node_width
+                    + ((row_nodes_count.saturating_sub(1)) as f64) * config.node_spacing_x;
 
-                        // Shift x so the group is right-aligned
-                        let row_width = (nodes_in_this_row as f64) * config.node_width
-                            + ((nodes_in_this_row.saturating_sub(1)) as f64)
-                                * config.node_spacing_x;
-                        let empty_space = col_w - row_width;
-                        topic_x = start_x
-                            + empty_space
-                            + (col as f64) * (config.node_width + config.node_spacing_x);
+                let node_x = match layout_mode {
+                    ColumnType::Left => {
+                        // Right align within Left Column to hug the spine
+                        let empty = target_w - row_width;
+                        target_x + empty + (c as f64) * (config.node_width + config.node_spacing_x)
                     }
-                    Column::Center => {
+                    ColumnType::Center => {
                         // Center align
-                        topic_x = start_x + (col_w - config.node_width) / 2.0;
+                        target_x
+                            + (target_w - row_width) / 2.0
+                            + (c as f64) * (config.node_width + config.node_spacing_x)
                     }
-                    Column::Right => {
-                        // Left align (standard)
-                        topic_x =
-                            start_x + (col as f64) * (config.node_width + config.node_spacing_x);
+                    ColumnType::Right => {
+                        // Left align
+                        target_x + (c as f64) * (config.node_width + config.node_spacing_x)
                     }
-                    _ => {}
-                }
+                };
 
                 topic_positions.push(TopicPosition {
                     topic_id: topic.id,
                     section_id: section.id,
-                    x: topic_x,
-                    y: topic_y,
+                    x: node_x,
+                    y: node_y,
                 });
             }
 
-            let content_h = (effective_rows as f64) * config.node_height
-                + ((effective_rows.saturating_sub(1)) as f64) * config.node_spacing_y;
-            *current_y += header_h + content_h + config.section_spacing_y;
-        }
-    }
-
-    // Full Width Logic (Bottom)
-    let max_y = left_y.max(center_y).max(right_y);
-    let mut full_y = max_y + 40.0;
-    let full_start_x = config.margin;
-    let full_width = config.margin + config.column_width * 3.0 + config.column_spacing * 2.0; // Approximation
-
-    for section in full_sections {
-        let raw_topics: Vec<&Topic> = topics
-            .iter()
-            .filter(|t| t.section_id == section.id)
-            .collect();
-        let section_topics = topological_sort(&raw_topics, dependencies);
-
-        section_positions.push(SectionPosition {
-            section_id: section.id,
-            x: full_start_x,
-            y: full_y,
-            width: full_width,
-        });
-
-        let topics_per_row = 5;
-        let rows = section_topics.len().div_ceil(topics_per_row);
-        let header_h = 30.0;
-
-        for (idx, topic) in section_topics.iter().enumerate() {
-            let row = idx / topics_per_row;
-            let col = idx % topics_per_row;
-
-            // Center the row
-            let nodes_in_this_row = if row == rows - 1 && section_topics.len() % topics_per_row != 0
-            {
-                section_topics.len() % topics_per_row
-            } else {
-                topics_per_row
-            };
-
-            let row_w = (nodes_in_this_row as f64) * config.node_width
-                + ((nodes_in_this_row.saturating_sub(1)) as f64) * config.node_spacing_x;
-            let start_x_row = full_start_x + (full_width - row_w) / 2.0;
-
-            let x = start_x_row + (col as f64) * (config.node_width + config.node_spacing_x);
-            let y = full_y + header_h + (row as f64) * (config.node_height + config.node_spacing_y);
-
-            topic_positions.push(TopicPosition {
-                topic_id: topic.id,
-                section_id: section.id,
-                x,
-                y,
-            });
+            let section_h = header_h
+                + (rows_count as f64) * config.node_height
+                + (rows_count.saturating_sub(1) as f64) * config.node_spacing_y;
+            if section_h > row_max_height {
+                row_max_height = section_h;
+            }
         }
 
-        let content_h = (rows as f64) * config.node_height
-            + ((rows.saturating_sub(1)) as f64) * config.node_spacing_y;
-        full_y += header_h + content_h + config.section_spacing_y;
+        current_y += row_max_height + config.section_spacing_y;
     }
 
     LayoutResult {
         sections: section_positions,
         topics: topic_positions,
-        total_width: full_width + config.margin * 2.0,
-        total_height: full_y + config.margin,
+        total_width: total_width_est + config.margin * 2.0,
+        total_height: current_y + config.margin,
     }
 }
 
