@@ -3,6 +3,10 @@ name = "rust-roadmap"
 version = "0.1.0"
 edition = "2024"
 
+[lib]
+name = "rust_roadmap"
+path = "src/lib.rs"
+
 [dependencies]
 # Web Framework
 leptos = { version = "0.6", features = ["csr"] }

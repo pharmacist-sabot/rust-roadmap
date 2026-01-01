@@ -1,17 +1,5 @@
-mod components;
-mod data;
-mod layout;
-mod models;
-mod routes;
-
 use leptos::*;
-
-#[component]
-fn App() -> impl IntoView {
-    view! {
-        <crate::routes::roadmap::RoadmapPage />
-    }
-}
+use rust_roadmap::app::App;
 
 fn main() {
     console_error_panic_hook::set_once();

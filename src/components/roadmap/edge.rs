@@ -39,7 +39,18 @@ pub fn RoadmapEdge(props: EdgeData) -> impl IntoView {
 
     // Compute orthogonal path (Manhattan routing)
     // Down -> Horizontal -> Down
-    let mid_y = (props.y1 + props.y2) / 2.0;
+    // IMPROVEMENT: Use a fixed offset above the TARGET node for the horizontal segment.
+    // This prevents the line from cutting through intermediate nodes.
+    let target_offset = 20.0;
+    let mid_y = props.y2 - target_offset;
+
+    // Safety check: if y1 is too close to y2 (shouldn't happen in top-down tree much),
+    // fallback to midpoint.
+    let mid_y = if mid_y < props.y1 + 10.0 {
+        (props.y1 + props.y2) / 2.0
+    } else {
+        mid_y
+    };
 
     let path_d = format!(
         "M {} {} L {} {} L {} {} L {} {}",
@@ -67,14 +78,14 @@ pub fn ArrowheadMarker() -> impl IntoView {
         <defs>
             <marker
                 id="arrowhead"
-                markerWidth="10"
-                markerHeight="7"
-                refX="9"
-                refY="3.5"
+                markerWidth="6"
+                markerHeight="4"
+                refX="5"
+                refY="2"
                 orient="auto"
                 markerUnits="strokeWidth"
             >
-                <polygon points="0 0, 10 3.5, 0 7" class="arrowhead-fill" />
+                <polygon points="0 0, 6 2, 0 4" class="arrowhead-fill" />
             </marker>
         </defs>
     }
