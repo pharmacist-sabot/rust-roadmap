@@ -3,7 +3,8 @@
 use crate::components::roadmap::edge::{ArrowheadMarker, EdgeData, RoadmapEdge};
 use crate::components::roadmap::node::{NodeData, RoadmapNode};
 use crate::layout::tree::{
-    LayoutConfig, LayoutResult, TopicPosition, topic_bottom_edge, topic_top_edge,
+    LayoutConfig, LayoutResult, TopicPosition, topic_bottom_edge, topic_left_edge,
+    topic_right_edge, topic_top_edge,
 };
 use crate::models::roadmap::{Dependency, Section, Topic};
 use leptos::*;
@@ -95,14 +96,38 @@ pub fn RoadmapDiagram(props: DiagramData) -> impl IntoView {
         .filter_map(|dep| {
             let from_pos = find_topic_position(&props.layout.topics, dep.from)?;
             let to_pos = find_topic_position(&props.layout.topics, dep.to)?;
-            let (x1, y1) = topic_bottom_edge(from_pos, &props.config);
-            let (x2, y2) = topic_top_edge(to_pos, &props.config);
-
-            // ถ้าเป็น Main -> Sub (จากเหลืองไปเบจ) ให้เป็นเส้นประ
             let from_topic = find_topic(props.topics, dep.from)?;
             let to_topic = find_topic(props.topics, dep.to)?;
 
-            // Logic เส้นประ: ต่าง Section หรือ ต่าง Type
+            // Determine connection points based on Placement
+            let (x1, y1, x2, y2) = match (from_topic.placement, to_topic.placement) {
+                // Center → Right: exit from right edge, enter from left edge
+                (
+                    crate::models::roadmap::Placement::Center,
+                    crate::models::roadmap::Placement::Right,
+                ) => {
+                    let (fx, fy) = topic_right_edge(from_pos, &props.config);
+                    let (tx, ty) = topic_left_edge(to_pos, &props.config);
+                    (fx, fy, tx, ty)
+                }
+                // Center → Left: exit from left edge, enter from right edge
+                (
+                    crate::models::roadmap::Placement::Center,
+                    crate::models::roadmap::Placement::Left,
+                ) => {
+                    let (fx, fy) = topic_left_edge(from_pos, &props.config);
+                    let (tx, ty) = topic_right_edge(to_pos, &props.config);
+                    (fx, fy, tx, ty)
+                }
+                // Vertical spine connections (Center → Center): top/bottom
+                _ => {
+                    let (fx, fy) = topic_bottom_edge(from_pos, &props.config);
+                    let (tx, ty) = topic_top_edge(to_pos, &props.config);
+                    (fx, fy, tx, ty)
+                }
+            };
+
+            // Dashed line: different Section OR different TopicType
             let is_cross_section = from_pos.section_id != to_pos.section_id
                 || from_topic.topic_type != to_topic.topic_type;
 

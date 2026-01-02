@@ -8,7 +8,7 @@ pub struct NodeData {
     pub id: &'static str,
     pub title: &'static str,
     pub level: Level,
-    pub topic_type: TopicType, // เพิ่ม Field นี้
+    pub topic_type: TopicType,
     pub x: f64,
     pub y: f64,
     pub width: f64,
@@ -17,7 +17,7 @@ pub struct NodeData {
 
 #[component]
 pub fn RoadmapNode(props: NodeData) -> impl IntoView {
-    // เลือก class ตามประเภทหัวข้อ
+    // Determine CSS class based on topic type
     let type_class = match props.topic_type {
         TopicType::Main => "type-main",
         TopicType::Sub => "type-sub",

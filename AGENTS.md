@@ -7,319 +7,124 @@ This is not documentation.
 This is a **binding contract**.
 
 The goal of this project is to build a **Rust-first, type-safe web application**
-that visualizes a **Rust learning roadmap**, inspired by roadmap-style diagrams,
-implemented using **Leptos + SVG**, with minimal to zero JavaScript.
-
-This project is maintained at **senior Rust developer standards**.
-AI agents must behave accordingly.
+that visualizes a **Rust learning roadmap**, matching the visual structure of the official Rust roadmap PDF.
 
 ---
 
 ## 1. Core Philosophy (Non-Negotiable)
 
-- Rust-first. Type safety is mandatory.
-- Data-driven UI. No hardcoded visual logic.
-- Deterministic behavior. Same input → same output.
-- Separation of concerns at all times.
-- Explicit > implicit.
-- Readability > cleverness.
-- Compile-time guarantees are preferred over runtime checks.
-
-If a solution trades correctness, clarity, or maintainability for speed,
-**it must be rejected**.
+- **Visual Fidelity:** The output must visually match the reference PDF (Fishbone layout).
+- **Explicit Layout Control:** Position (Left/Right/Center) is defined in Data, not guessed by algorithms.
+- **Modular Content:** Content is split into atomic modules per section.
+- **Type Safety:** Stringly-typed logic is forbidden in core structures.
 
 ---
 
 ## 2. Technology Stack (MANDATORY)
 
-AI agents MUST follow this stack unless explicitly instructed otherwise.
-
-### Required
-- Rust (stable toolchain)
-- Leptos (frontend framework)
-- SVG for roadmap rendering
-- Trunk for WASM bundling
-
-### Optional (Only with Justification)
-- Axum (server-side / API)
-- Serde (serialization / deserialization)
-- WASM-bindgen (only if strictly required)
-
-### Forbidden by Default
-- React, Vue, Svelte, or other JS frameworks
-- D3.js or JavaScript-based graph engines
-- Inline JavaScript logic in HTML
-- CSS-driven layout logic replacing Rust layout code
+- **Rust** (stable toolchain)
+- **Leptos** (frontend framework, CSR)
+- **SVG** (rendering)
+- **Trunk** (bundler)
 
 ---
 
-## 3. Project Intent
+## 3. Authoritative Folder Structure
 
-This repository aims to:
-
-1. Model a **Rust learning roadmap** as structured, typed data
-2. Represent **sections, topics, and dependencies** explicitly
-3. Compute layout positions deterministically in Rust
-4. Render the roadmap visually using SVG
-5. Allow future extensions without architectural rewrites:
-   - Multiple tracks (Beginner / Backend / Embedded / Systems)
-   - Filtering and highlighting
-   - Export to SVG / PDF
-   - Versioned roadmap data
-
-AI agents MUST design code that anticipates growth.
-
----
-
-## 4. Authoritative Folder Structure
-
-AI agents MUST respect and extend the following structure.
+AI agents MUST adhere to this modular data structure to manage the 23 roadmap sections.
 
 ```text
 src/
-├── app.rs                 # Root Leptos component
-├── main.rs                # Application entry point
-├── lib.rs                 # Shared logic (client/server safe)
-│   ├── routes/                # Page-level routing
-│   │   ├── mod.rs
-│   │   ├── home.rs
-│   │   ├── roadmap.rs
-│   │   └── about.rs
-│   ├── components/            # UI components
-│   │   ├── mod.rs
-│   │   ├── ui/
-│   │   │   ├── navbar.rs
-│   │   │   └── footer.rs
-│   │   └── roadmap/
-│   │       ├── node.rs        # SVG node rendering
-│   │       ├── edge.rs        # Dependency edges
-│   │       └── diagram.rs     # Full roadmap renderer
-│   ├── data/                  # Roadmap data definitions
-│   │   ├── mod.rs
-│   │   └── roadmap_data.rs
-│   ├── models/                # Domain models (pure Rust)
-│   │   ├── mod.rs
-│   │   └── roadmap.rs
-│   ├── layout/                # Layout & positioning algorithms
-│   │   ├── mod.rs
-│   │   └── tree.rs
-│   ├── state/                 # Application & UI state
-│   │   ├── mod.rs
-│   │   └── roadmap_state.rs
-│   ├── utils/                 # Shared helpers & utilities
-│   │   ├── mod.rs
-│   │   └── helpers.rs
+├── components/            # UI components (Leptos)
+│   ├── roadmap/
+│   │   ├── node.rs        # Renders based on TopicType (Main/Sub)
+│   │   ├── edge.rs
+│   │   └── diagram.rs
+├── data/                  # Data Layer
+│   ├── mod.rs             # Aggregates all sections
+│   └── sections/          # CONTENT MODULES
+│       ├── mod.rs
+│       ├── s01_introduction.rs
+│       ├── s02_language_basics.rs
+│       ├── ...
+│       └── s23_debugging.rs
+├── layout/                # Layout Engine
+│   ├── mod.rs
+│   └── tree.rs            # Logic must respect `Placement` enum
+├── models/                # Domain models
+│   ├── mod.rs
+│   └── roadmap.rs
 ```
-
-AI agents MUST NOT:
-- Mix layout logic with rendering
-- Embed roadmap data inside UI components
-- Collapse unrelated responsibilities into a single file
 
 ---
 
-## 5. Roadmap Data Model Rules
+## 4. Roadmap Data Model Rules
 
-The roadmap MUST be represented using **explicit Rust data structures**.
+The data model MUST support explicit positioning to replicate the "Fishbone" diagram.
 
-### Required Concepts
-- Section (or Phase)
-- Topic (node)
-- Dependency (edge)
-- Level or difficulty (enum)
-
-### Conceptual Example
+### 4.1 Required Enums
+AI agents must use these specific enums in `src/models/roadmap.rs`:
 
 ```rust
-enum Level {
-    Beginner,
-    Intermediate,
-    Advanced,
+pub enum TopicType {
+    Main, // Yellow box (Central Spine)
+    Sub,  // Beige box (Branches)
 }
 
-struct Section {
-    id: &'static str,
-    title: &'static str,
-    order: u8,
-}
-
-struct Topic {
-    id: &'static str,
-    title: &'static str,
-    section_id: &'static str,
-    level: Level,
-}
-
-struct Dependency {
-    from: &'static str,
-    to: &'static str,
+pub enum Placement {
+    Center, // Aligned to the central axis
+    Left,   // Branches out to the Left
+    Right,  // Branches out to the Right
 }
 ```
 
-Rules:
-- IDs must be stable and deterministic
-- No stringly-typed logic inside UI components
-- Prefer enums over free-form strings
-- Data definitions MUST be independent from rendering
+### 4.2 Content Separation Rules
+- **One File Per Section:** Each of the 23 yellow boxes in the PDF corresponds to **one** Rust file in `src/data/sections/`.
+- **Naming Convention:** `s{order}_{snake_case_title}.rs` (e.g., `s05_testing.rs`).
+- **Aggregator:** `src/data/mod.rs` must publicly expose a function `get_all_topics()` that combines vectors from all sub-modules.
 
 ---
 
-## 6. Layout Responsibilities
+## 5. Layout Engine Responsibilities
 
-Layout computation MUST be:
-- Deterministic
-- Testable
-- Independent from rendering
+The layout algorithm in `src/layout/tree.rs` MUST NOT try to "smartly" guess positions based on topology.
+It MUST obey the `Placement` field.
 
-Rules:
-- Layout logic lives in `src/layout/`
-- SVG components receive precomputed positions
-- No layout math inside Leptos view macros
-
-If layout and rendering logic are mixed, the change must be rejected.
+- **Center:** Render on the central X-axis.
+- **Left:** Render to the left of the axis. If multiple items are Left, stack them or flow them outwards based on index.
+- **Right:** Render to the right of the axis.
 
 ---
 
-## 7. Rendering Rules (SVG)
+## 6. Rendering Rules (Visuals)
 
-- SVG is the primary rendering layer
-- Nodes are rendered using `<rect>`, `<g>`, or `<foreignObject>`
-- Edges use `<line>` or `<path>`
-- Styling is done via CSS, not inline SVG attributes
+The UI must distinguish between Topic Types:
 
-Accessibility matters:
-- Text must be readable
-- Colors must have sufficient contrast
-- Hover and focus states must be intentional
-
----
-
-## 8. State Management
-
-- Use Leptos signals (`create_signal`, `RwSignal`)
-- Global roadmap state belongs in `state/`
-- Components receive state via props
-
-Do NOT:
-- Use global mutable statics
-- Store UI state inside domain models
+- **TopicType::Main (Cyber Neon):**
+  - Fill: `#111111` (Dark Matter)
+  - Stroke: `#FF4400` (Neon Rust) + Glow Effect
+  - Text: White, Bold, Glowing
+- **TopicType::Sub (Dark Glass):**
+  - Fill: `#1A1A1A` (Dark Surface)
+  - Stroke: `#FF8800` (Amber Neon)
+  - Text: Silver White, Normal
 
 ---
 
-## 9. Testing Expectations
+## 7. Quality Gates
 
-AI agents SHOULD add tests when:
-- Implementing layout algorithms
-- Transforming roadmap data
-- Writing non-trivial logic
-
-Preferred:
-- Unit tests for layout
-- Deterministic tests for data transformations
+1.  **Rustfmt:** `cargo fmt --check` must pass.
+2.  **Clippy:** `cargo clippy` must pass with no warnings.
+3.  **Compilation:** Code must compile.
+4.  **No Hallucinated Imports:** Do not import modules that do not exist. Create the module file first.
 
 ---
 
-## 10. Code Style & Discipline
+## 8. Commit Discipline
 
-- No unused imports
-- No dead code
-- No unexplained TODOs
-- Clear naming over short naming
-- Rustfmt-compliant code only
+When generating code for sections, use granular commits:
+- `feat(data): add s01_introduction data`
+- `feat(layout): implement explicit placement logic`
+- `style(roadmap): update node colors to match PDF`
 
-If the code would embarrass a senior Rust developer during review, do not commit it.
-
----
-
-## 11. Automated Quality Gates (MANDATORY)
-
-All AI-generated or AI-modified code MUST pass the following checks.
-These checks define the meaning of “done”.
-
-### 11.1 rustfmt
-All Rust code MUST be formatted using `rustfmt`
-Default stable formatting only
-
-AI agents MUST assume:
-`cargo fmt --check`
-will be enforced.
-
-### 11.2 clippy
-All code MUST pass:
-`cargo clippy --all-targets --all-features`
-Clippy warnings are treated as errors
-
-AI agents MUST proactively avoid:
-- Needless clones
-- Unnecessary allocations
-- `unwrap()` / `expect()` in production code
-- Blanket `#[allow(...)]` attributes
-
-If clippy would complain, the code is unacceptable.
-
-### 11.3 Build Integrity
-Before suggesting changes, AI agents MUST ensure:
-1. `cargo check`
-2. `cargo fmt --check`
-3. `cargo clippy --all-targets --all-features`
-
-would succeed without warnings or errors.
-
-### 11.4 Error Handling Discipline
-- No `unwrap()` or `expect()` in production code
-- Errors must be propagated using `Result`
-- Or handled explicitly with meaningful context
-
-Tests may use `unwrap()` if justified.
-
-### 11.5 Unsafe Code Policy
-`unsafe` is forbidden by default
-
-Any use of unsafe requires:
-1. Clear justification
-2. A safety comment explaining invariants
-3. Explicit approval
-
-### 11.6 Lint Suppression Rules
-`#[allow(...)]` is discouraged
-
-If used, it MUST:
-- Be narrowly scoped
-- Include a justification comment
-
-Global lint suppression is forbidden.
-
-### 11.7 CI Awareness
-AI agents must write code as if CI enforces:
-- Formatting failures = build failures
-- Clippy warnings = build failures
-- Non-deterministic behavior = rejection
-
-Failure to meet these quality gates indicates that the AI agent did not follow project rules and the output must be rejected.
-
----
-
-## 12. Commit Discipline (For AI Suggestions)
-
-When proposing commit messages, use this format:
-
-- `feat(roadmap): add typed roadmap data model`
-- `refactor(layout): extract deterministic tree positioning`
-- `docs: update AGENTS.md with quality gates`
-
-Vague messages are not acceptable.
-
----
-
-## 13. Final Authority
-
-This file is the source of truth.
-
-If any instruction conflicts with:
-- Convenience
-- Speed
-- External examples
-
-This file wins.
-
-We build this as Rust developers. Carefully. Correctly. Proudly.
+This file is the absolute source of truth.

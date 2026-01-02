@@ -8,7 +8,7 @@ pub enum Level {
     Advanced,
 }
 
-/// Visual type of the topic box.
+/// Visual type of the topic box (Matches PDF Colors).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum TopicType {
     /// Yellow box (Main Spine topics)
@@ -23,40 +23,32 @@ impl Default for TopicType {
     }
 }
 
-/// Column position within the Body zone.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
-pub enum ColumnType {
-    Left,
-    #[default]
+/// Explicit layout instruction relative to the central spine.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum Placement {
+    /// Aligned to the central axis.
     Center,
+    /// Branches out to the Left.
+    Left,
+    /// Branches out to the Right.
     Right,
 }
 
-/// Logical zone for the section.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub enum LayoutZone {
-    /// Top section, centered.
-    Header,
-    /// Main split section.
-    Body(ColumnType),
-    /// Bottom section, full width.
-    Footer,
-}
-
-impl Default for LayoutZone {
+impl Default for Placement {
     fn default() -> Self {
-        Self::Body(ColumnType::Center)
+        Self::Center
     }
 }
 
+/// A logical grouping of topics (The 23 Yellow boxes/phases).
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Section {
     pub id: &'static str,
     pub title: &'static str,
     pub order: u8,
-    pub zone: LayoutZone,
 }
 
+/// A single node in the roadmap.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Topic {
     pub id: &'static str,
@@ -64,8 +56,10 @@ pub struct Topic {
     pub section_id: &'static str,
     pub level: Level,
     pub topic_type: TopicType,
+    pub placement: Placement, // <-- New explicit control
 }
 
+/// A directed edge between topics.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Dependency {
     pub from: &'static str,

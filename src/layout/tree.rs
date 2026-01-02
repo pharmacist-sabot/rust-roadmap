@@ -1,34 +1,26 @@
-//! Deterministic tree-style layout algorithm.
-//! Now strictly Row-based to maintain visual relationships.
+//! Deterministic layout algorithm respecting explicit Placement.
 
-use crate::models::roadmap::{ColumnType, Dependency, LayoutZone, Section, Topic};
-use std::collections::{HashMap, HashSet};
+use crate::models::roadmap::{Dependency, Placement, Section, Topic};
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct LayoutConfig {
-    pub column_width: f64,
-    pub column_spacing: f64,
-    pub section_spacing_y: f64,
     pub node_width: f64,
     pub node_height: f64,
-    pub node_spacing_x: f64,
-    pub node_spacing_y: f64,
-    pub margin: f64,
-    pub topics_per_row: usize,
+    pub center_x: f64,        // Absolute center axis
+    pub col_spacing: f64,     // Distance from center to Left/Right columns
+    pub node_spacing_y: f64,  // Vertical gap between nodes
+    pub section_spacing: f64, // Vertical gap between sections
 }
 
 impl Default for LayoutConfig {
     fn default() -> Self {
         Self {
-            column_width: 250.0,     // Standard width
-            column_spacing: 60.0,    // Tighter spacing
-            section_spacing_y: 60.0, // More breathing room between rows
             node_width: 180.0,
             node_height: 40.0,
-            node_spacing_x: 20.0,
+            center_x: 600.0,    // Wide canvas center
+            col_spacing: 150.0, // Gap between Spine and Branches
             node_spacing_y: 20.0,
-            margin: 50.0,
-            topics_per_row: 1, // Default to single stack for Side columns
+            section_spacing: 60.0,
         }
     }
 }
@@ -57,217 +49,122 @@ pub struct LayoutResult {
     pub total_height: f64,
 }
 
-fn topological_sort<'a>(topics: &[&'a Topic], dependencies: &[Dependency]) -> Vec<&'a Topic> {
-    let mut id_map: HashMap<&str, &'a Topic> = HashMap::new();
-    let mut topic_ids: HashSet<&str> = HashSet::new();
-    for topic in topics {
-        id_map.insert(topic.id, *topic);
-        topic_ids.insert(topic.id);
-    }
-
-    let mut in_degree: HashMap<&str, usize> = HashMap::new();
-    let mut adj: HashMap<&str, Vec<&str>> = HashMap::new();
-    for topic in topics {
-        in_degree.insert(topic.id, 0);
-        adj.insert(topic.id, Vec::new());
-    }
-
-    for dep in dependencies {
-        if topic_ids.contains(dep.from) && topic_ids.contains(dep.to) {
-            adj.entry(dep.from).or_default().push(dep.to);
-            *in_degree.entry(dep.to).or_default() += 1;
-        }
-    }
-
-    let mut queue: Vec<&str> = in_degree
-        .iter()
-        .filter(|&(_, &d)| d == 0)
-        .map(|(&id, _)| id)
-        .collect();
-
-    // Sort queue by original index to maintain stability
-    let mut topic_order_map = HashMap::new();
-    for (i, t) in topics.iter().enumerate() {
-        topic_order_map.insert(t.id, i);
-    }
-    queue.sort_by_key(|id| topic_order_map.get(id).unwrap_or(&0));
-    queue.reverse();
-
-    let mut result = Vec::new();
-    while let Some(u) = queue.pop() {
-        if let Some(topic) = id_map.get(u) {
-            result.push(*topic);
-        }
-        if let Some(neighbors) = adj.get(u) {
-            let mut sorted_neighbors = neighbors.clone();
-            sorted_neighbors.sort_by_key(|id| topic_order_map.get(id).unwrap_or(&0));
-            // Stable sort
-
-            for &v in neighbors {
-                if let Some(d) = in_degree.get_mut(v) {
-                    *d -= 1;
-                    if *d == 0 {
-                        queue.push(v);
-                    }
-                }
-            }
-            queue.sort_by_key(|id| std::cmp::Reverse(topic_order_map.get(id).unwrap_or(&0)));
-        }
-    }
-    // Add remaining
-    for topic in topics {
-        if !result.contains(topic) {
-            result.push(*topic);
-        }
-    }
-    result
-}
-
 pub fn compute_layout(
     sections: &[Section],
     topics: &[Topic],
-    dependencies: &[Dependency],
+    _dependencies: &[Dependency], // Used for fine-tuning sort if needed, but we rely on order mostly
     config: &LayoutConfig,
 ) -> LayoutResult {
-    let mut section_positions = Vec::with_capacity(sections.len());
-    let mut topic_positions = Vec::with_capacity(topics.len());
+    let mut section_positions = Vec::new();
+    let mut topic_positions = Vec::new();
 
-    // Group sections by Order (Row)
-    // Key: Order Index -> Value: List of Sections
-    let mut rows: HashMap<i32, Vec<&Section>> = HashMap::new();
-    for section in sections {
-        // Footer is special, treat as Order 9999 or handle separately?
-        // Let's treat standard Header/Body zones as tiered rows.
-        let order_key: i32 = match section.zone {
-            LayoutZone::Footer => 9999,
-            _ => section.order as i32,
-        };
-        rows.entry(order_key).or_default().push(section);
-    }
+    let mut current_y = 50.0; // Start margin
 
-    let mut sorted_keys: Vec<i32> = rows.keys().cloned().collect();
-    sorted_keys.sort();
+    // Sort sections by order explicitly
+    let mut sorted_sections = sections.to_vec();
+    sorted_sections.sort_by_key(|s| s.order);
 
-    // Determine X Base Positions
-    // Assuming symmetric 3-column layout
-    // Left Start | Center Start | Right Start
-    let center_col_width = config.node_width * 1.5; // Wider for main topics
-    let side_col_width = config.column_width;
+    for section in sorted_sections {
+        let section_topics: Vec<&Topic> = topics
+            .iter()
+            .filter(|t| t.section_id == section.id)
+            .collect();
 
-    let total_width_est = side_col_width * 2.0 + center_col_width + config.column_spacing * 2.0;
+        if section_topics.is_empty() {
+            continue;
+        }
 
-    let left_x = config.margin;
-    let center_x = left_x + side_col_width + config.column_spacing;
-    let right_x = center_x + center_col_width + config.column_spacing;
+        // 1. Identify the Anchor (Main/Center topic) to determine this section's Y baseline
+        // Usually the first Center topic found.
 
-    let mut current_y = config.margin;
+        // Store Section Header (Optional visual aid)
+        section_positions.push(SectionPosition {
+            section_id: section.id,
+            x: config.center_x - (config.node_width / 2.0),
+            y: current_y,
+            width: config.node_width,
+        });
 
-    for key in sorted_keys {
-        let row_sections = rows.get(&key).unwrap();
+        // 2. Separate topics into columns
+        let center_topics: Vec<&Topic> = section_topics
+            .iter()
+            .filter(|t| t.placement == Placement::Center)
+            .copied()
+            .collect();
+        let left_topics: Vec<&Topic> = section_topics
+            .iter()
+            .filter(|t| t.placement == Placement::Left)
+            .copied()
+            .collect();
+        let right_topics: Vec<&Topic> = section_topics
+            .iter()
+            .filter(|t| t.placement == Placement::Right)
+            .copied()
+            .collect();
 
-        let mut row_max_height = 0.0;
-        let start_y = current_y;
+        // 3. Layout Center(s)
+        // Usually just one main spine node, but could be stacked
+        let start_y_for_section = current_y;
+        let mut max_y_in_section = current_y;
 
-        // Sorting sections within the row by Zone usually helps: Left -> Center -> Right
-        // But we iterate simply.
+        for (i, t) in center_topics.iter().enumerate() {
+            let y = start_y_for_section + (i as f64) * (config.node_height + config.node_spacing_y);
+            let x = config.center_x - (config.node_width / 2.0);
 
-        for section in row_sections {
-            let (target_x, target_w, layout_mode) = match section.zone {
-                LayoutZone::Body(ColumnType::Left) => (left_x, side_col_width, ColumnType::Left),
-                LayoutZone::Body(ColumnType::Right) => (right_x, side_col_width, ColumnType::Right),
-                LayoutZone::Body(ColumnType::Center) | LayoutZone::Header => {
-                    (center_x, center_col_width, ColumnType::Center)
-                }
-                LayoutZone::Footer => (config.margin, total_width_est, ColumnType::Center), // Full width
-            };
-
-            // Layout this section
-            let raw_topics: Vec<&Topic> = topics
-                .iter()
-                .filter(|t| t.section_id == section.id)
-                .collect();
-            let section_topics = topological_sort(&raw_topics, dependencies);
-
-            let header_h = 30.0;
-            let is_wide_single = section.zone == LayoutZone::Footer; // Or specific logic
-            let topics_per_row = if is_wide_single {
-                4
-            } else {
-                match layout_mode {
-                    ColumnType::Center => 1,
-                    _ => config.topics_per_row, // 1 for sides usually
-                }
-            };
-
-            let rows_count = section_topics.len().div_ceil(topics_per_row);
-
-            section_positions.push(SectionPosition {
+            topic_positions.push(TopicPosition {
+                topic_id: t.id,
                 section_id: section.id,
-                x: target_x,
-                y: start_y,
-                width: target_w,
+                x,
+                y,
             });
+            max_y_in_section = max_y_in_section.max(y + config.node_height);
+        }
 
-            for (idx, topic) in section_topics.iter().enumerate() {
-                let r = idx / topics_per_row;
-                let c = idx % topics_per_row;
-
-                let node_y =
-                    start_y + header_h + (r as f64) * (config.node_height + config.node_spacing_y);
-
-                // Calculate X
-                let row_nodes_count =
-                    if r == rows_count - 1 && section_topics.len() % topics_per_row != 0 {
-                        section_topics.len() % topics_per_row
-                    } else {
-                        topics_per_row
-                    };
-
-                let row_width = (row_nodes_count as f64) * config.node_width
-                    + ((row_nodes_count.saturating_sub(1)) as f64) * config.node_spacing_x;
-
-                let node_x = match layout_mode {
-                    ColumnType::Left => {
-                        // Right align within Left Column to hug the spine
-                        let empty = target_w - row_width;
-                        target_x + empty + (c as f64) * (config.node_width + config.node_spacing_x)
-                    }
-                    ColumnType::Center => {
-                        // Center align
-                        target_x
-                            + (target_w - row_width) / 2.0
-                            + (c as f64) * (config.node_width + config.node_spacing_x)
-                    }
-                    ColumnType::Right => {
-                        // Left align
-                        target_x + (c as f64) * (config.node_width + config.node_spacing_x)
-                    }
-                };
+        // 4. Layout Lefts (Stacking downwards)
+        // Logic: Align Right-side of the node to (center_x - col_spacing)
+        if !left_topics.is_empty() {
+            let start_x = config.center_x - config.col_spacing - config.node_width;
+            for (i, t) in left_topics.iter().enumerate() {
+                let y =
+                    start_y_for_section + (i as f64) * (config.node_height + config.node_spacing_y);
 
                 topic_positions.push(TopicPosition {
-                    topic_id: topic.id,
+                    topic_id: t.id,
                     section_id: section.id,
-                    x: node_x,
-                    y: node_y,
+                    x: start_x,
+                    y,
                 });
-            }
-
-            let section_h = header_h
-                + (rows_count as f64) * config.node_height
-                + (rows_count.saturating_sub(1) as f64) * config.node_spacing_y;
-            if section_h > row_max_height {
-                row_max_height = section_h;
+                max_y_in_section = max_y_in_section.max(y + config.node_height);
             }
         }
 
-        current_y += row_max_height + config.section_spacing_y;
+        // 5. Layout Rights (Stacking downwards)
+        // Logic: Align Left-side of the node to (center_x + col_spacing)
+        if !right_topics.is_empty() {
+            let start_x = config.center_x + config.col_spacing;
+            for (i, t) in right_topics.iter().enumerate() {
+                let y =
+                    start_y_for_section + (i as f64) * (config.node_height + config.node_spacing_y);
+
+                topic_positions.push(TopicPosition {
+                    topic_id: t.id,
+                    section_id: section.id,
+                    x: start_x,
+                    y,
+                });
+                max_y_in_section = max_y_in_section.max(y + config.node_height);
+            }
+        }
+
+        // Move Y cursor for next section
+        current_y = max_y_in_section + config.section_spacing;
     }
 
     LayoutResult {
         sections: section_positions,
         topics: topic_positions,
-        total_width: total_width_est + config.margin * 2.0,
-        total_height: current_y + config.margin,
+        total_width: config.center_x * 2.0, // Symmetric canvas
+        total_height: current_y + 100.0,
     }
 }
 
@@ -276,4 +173,11 @@ pub fn topic_bottom_edge(pos: &TopicPosition, config: &LayoutConfig) -> (f64, f6
 }
 pub fn topic_top_edge(pos: &TopicPosition, config: &LayoutConfig) -> (f64, f64) {
     (pos.x + config.node_width / 2.0, pos.y)
+}
+// Helpers for side connections
+pub fn topic_left_edge(pos: &TopicPosition, config: &LayoutConfig) -> (f64, f64) {
+    (pos.x, pos.y + config.node_height / 2.0)
+}
+pub fn topic_right_edge(pos: &TopicPosition, config: &LayoutConfig) -> (f64, f64) {
+    (pos.x + config.node_width, pos.y + config.node_height / 2.0)
 }
