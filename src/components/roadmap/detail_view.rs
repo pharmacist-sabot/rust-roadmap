@@ -27,7 +27,7 @@ pub fn TopicDetail(content: TopicContent, on_close: Callback<()>) -> impl IntoVi
                                 view! {
                                     <div class="resource-item">
                                         <span class=badge_class>{badge_text}</span>
-                                        <a href=res.url target="_blank" class="resource-link">{res.label}</a>
+                                        <a href=res.url target="_blank" rel="noopener noreferrer" class="resource-link">{res.label}</a>
                                     </div>
                                 }
                             }).collect_view()}
