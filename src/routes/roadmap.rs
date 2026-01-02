@@ -1,6 +1,9 @@
+use crate::components::roadmap::detail_view::TopicDetail;
 use crate::components::roadmap::diagram::{DiagramData, RoadmapDiagram};
+use crate::data::content::get_topic_content;
 use crate::data::{SECTIONS, get_all_dependencies, get_all_topics};
 use crate::layout::tree::{LayoutConfig, compute_layout};
+use crate::models::roadmap::TopicContent;
 use leptos::*;
 
 #[component]
@@ -24,12 +27,26 @@ pub fn RoadmapPage() -> impl IntoView {
 
     let layout = compute_layout(SECTIONS, static_topics, static_deps, &config);
 
+    // State for selected topic content
+    let (selected_content, set_selected_content) = create_signal(None::<TopicContent>);
+
+    let handle_topic_click = Callback::new(move |id: &'static str| {
+        if let Some(content) = get_topic_content(id) {
+            set_selected_content.set(Some(content));
+        }
+    });
+
+    let handle_close_detail = Callback::new(move |_| {
+        set_selected_content.set(None);
+    });
+
     let diagram_props = DiagramData {
         sections: SECTIONS,
         topics: static_topics,
         dependencies: static_deps,
         layout,
         config,
+        on_topic_click: handle_topic_click,
     };
 
     view! {
@@ -41,6 +58,13 @@ pub fn RoadmapPage() -> impl IntoView {
             <main class="roadmap-content">
                 <RoadmapDiagram props=diagram_props />
             </main>
+
+            <Show when=move || selected_content.get().is_some()>
+                <TopicDetail
+                    content=selected_content.get().unwrap()
+                    on_close=handle_close_detail
+                />
+            </Show>
         </div>
     }
 }

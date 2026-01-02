@@ -1,5 +1,6 @@
 //! Application data aggregator.
 
+pub mod content;
 pub mod sections;
 
 use self::sections::*;
