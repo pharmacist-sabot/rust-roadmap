@@ -1,6 +1,6 @@
 use crate::components::roadmap::detail_view::TopicDetail;
 use crate::components::roadmap::diagram::{DiagramData, RoadmapDiagram};
-use crate::data::content::get_topic_content;
+use crate::data::get_topic_content;
 use crate::data::{SECTIONS, get_all_dependencies, get_all_topics};
 use crate::layout::tree::{LayoutConfig, compute_layout};
 use crate::models::roadmap::TopicContent;

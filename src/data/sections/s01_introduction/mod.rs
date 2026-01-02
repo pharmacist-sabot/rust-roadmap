@@ -1,5 +1,7 @@
 use crate::models::roadmap::{Dependency, Level, Placement, Topic, TopicType};
 
+pub mod content;
+
 pub const SECTION_ID: &str = "intro_sec";
 
 pub fn get_topics() -> Vec<Topic> {

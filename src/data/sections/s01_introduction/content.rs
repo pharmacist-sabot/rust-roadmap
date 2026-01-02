@@ -1,6 +1,6 @@
 use crate::models::roadmap::{Resource, TopicContent};
 
-pub fn get_topic_content(id: &str) -> Option<TopicContent> {
+pub fn get_content(id: &str) -> Option<TopicContent> {
     match id {
         "intro" => Some(TopicContent {
             title: "Introduction",

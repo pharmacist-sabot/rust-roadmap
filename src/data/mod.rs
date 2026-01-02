@@ -1,10 +1,9 @@
 //! Application data aggregator.
 
-pub mod content;
 pub mod sections;
 
 use self::sections::*;
-use crate::models::roadmap::{Dependency, Section, Topic};
+use crate::models::roadmap::{Dependency, Section, Topic, TopicContent};
 
 /// Defines the order of sections (The Spine).
 pub const SECTIONS: &[Section] = &[
@@ -18,7 +17,6 @@ pub const SECTIONS: &[Section] = &[
         title: "",
         order: 2,
     },
-    // Add more sections here as you create files s03...s23
 ];
 
 /// Aggregates topics from all modular files.
@@ -26,7 +24,6 @@ pub fn get_all_topics() -> Vec<Topic> {
     let mut topics = Vec::new();
     topics.extend(s01_introduction::get_topics());
     topics.extend(s02_language_basics::get_topics());
-    // topics.extend(s03_...::get_topics());
     topics
 }
 
@@ -43,7 +40,18 @@ pub fn get_all_dependencies() -> Vec<Dependency> {
         from: "intro",
         to: "basics",
     });
-    // deps.push(Dependency { from: "basics", to: "error_handling" });
 
     deps
+}
+
+/// Aggregates content lookup from all decentralized content files.
+pub fn get_topic_content(id: &str) -> Option<TopicContent> {
+    // Try finding content in each section
+    if let Some(c) = s01_introduction::content::get_content(id) {
+        return Some(c);
+    }
+    if let Some(c) = s02_language_basics::content::get_content(id) {
+        return Some(c);
+    }
+    None
 }
