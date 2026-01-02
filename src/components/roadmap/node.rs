@@ -3,7 +3,7 @@
 use crate::models::roadmap::{Level, TopicType};
 use leptos::*;
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug)]
 pub struct NodeData {
     pub id: &'static str,
     pub title: &'static str,
@@ -13,6 +13,7 @@ pub struct NodeData {
     pub y: f64,
     pub width: f64,
     pub height: f64,
+    pub on_click: Callback<&'static str>,
 }
 
 #[component]
@@ -26,7 +27,12 @@ pub fn RoadmapNode(props: NodeData) -> impl IntoView {
     let class_attr = format!("roadmap-node {}", type_class);
 
     view! {
-        <g class=class_attr data-topic-id=props.id>
+        <g
+            class=class_attr
+            data-topic-id=props.id
+            on:click=move |_| props.on_click.call(props.id)
+            style="cursor: pointer;"
+        >
             <rect
                 x=props.x
                 y=props.y

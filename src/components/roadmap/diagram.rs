@@ -36,6 +36,7 @@ pub struct DiagramData {
     pub dependencies: &'static [Dependency],
     pub layout: LayoutResult,
     pub config: LayoutConfig,
+    pub on_topic_click: Callback<&'static str>,
 }
 
 fn find_topic<'a>(topics: &'a [Topic], id: &str) -> Option<&'a Topic> {
@@ -86,6 +87,7 @@ pub fn RoadmapDiagram(props: DiagramData) -> impl IntoView {
                 y: tp.y,
                 width: props.config.node_width,
                 height: props.config.node_height,
+                on_click: props.on_topic_click,
             })
         })
         .collect();
