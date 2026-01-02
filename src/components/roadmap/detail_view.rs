@@ -1,4 +1,4 @@
-use crate::models::roadmap::TopicContent;
+use crate::models::roadmap::{BadgeKind, TopicContent};
 use leptos::*;
 
 #[component]
@@ -19,14 +19,14 @@ pub fn TopicDetail(content: TopicContent, on_close: Callback<()>) -> impl IntoVi
                         <h3>"Free Resources"</h3>
                         <div class="resources-list">
                             {content.resources.into_iter().map(|res| {
-                                let badge_class = match res.badge {
-                                    "Official" => "badge official",
-                                    "OpenSource" => "badge opensource",
-                                    _ => "badge default"
+                                let (badge_class, badge_text) = match res.badge {
+                                    BadgeKind::Official => ("badge official", "Official"),
+                                    BadgeKind::OpenSource => ("badge opensource", "Open Source"),
+                                    BadgeKind::Other(s) => ("badge default", s),
                                 };
                                 view! {
                                     <div class="resource-item">
-                                        <span class=badge_class>{res.badge}</span>
+                                        <span class=badge_class>{badge_text}</span>
                                         <a href=res.url target="_blank" class="resource-link">{res.label}</a>
                                     </div>
                                 }

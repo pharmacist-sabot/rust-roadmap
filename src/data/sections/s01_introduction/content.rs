@@ -1,4 +1,4 @@
-use crate::models::roadmap::{Resource, TopicContent};
+use crate::models::roadmap::{BadgeKind, Resource, TopicContent};
 
 pub fn get_content(id: &str) -> Option<TopicContent> {
     match id {
@@ -13,22 +13,22 @@ pub fn get_content(id: &str) -> Option<TopicContent> {
                 Resource {
                     label: "Rust Programming Language",
                     url: "https://www.rust-lang.org/",
-                    badge: "Official",
+                    badge: BadgeKind::Official,
                 },
                 Resource {
                     label: "Rust by Example",
                     url: "https://doc.rust-lang.org/rust-by-example/",
-                    badge: "Official",
+                    badge: BadgeKind::Official,
                 },
                 Resource {
                     label: "Rust Book",
                     url: "https://doc.rust-lang.org/book/",
-                    badge: "OpenSource",
+                    badge: BadgeKind::OpenSource,
                 },
                 Resource {
                     label: "Rust Book Interactive",
                     url: "https://rust-book.cs.brown.edu/",
-                    badge: "OpenSource",
+                    badge: BadgeKind::OpenSource,
                 },
             ],
         }),

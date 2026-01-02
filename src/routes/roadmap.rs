@@ -3,7 +3,6 @@ use crate::components::roadmap::diagram::{DiagramData, RoadmapDiagram};
 use crate::data::get_topic_content;
 use crate::data::{SECTIONS, get_all_dependencies, get_all_topics};
 use crate::layout::tree::{LayoutConfig, compute_layout};
-use crate::models::roadmap::TopicContent;
 use leptos::*;
 
 #[component]
@@ -27,17 +26,19 @@ pub fn RoadmapPage() -> impl IntoView {
 
     let layout = compute_layout(SECTIONS, static_topics, static_deps, &config);
 
-    // State for selected topic content
-    let (selected_content, set_selected_content) = create_signal(None::<TopicContent>);
+    // State for selected topic ID
+    let (selected_topic_id, set_selected_topic_id) = create_signal(None::<&'static str>);
+
+    // Derived signal for content - this ensures we always get fresh content or None
+    let selected_content =
+        create_memo(move |_| selected_topic_id.get().and_then(get_topic_content));
 
     let handle_topic_click = Callback::new(move |id: &'static str| {
-        if let Some(content) = get_topic_content(id) {
-            set_selected_content.set(Some(content));
-        }
+        set_selected_topic_id.set(Some(id));
     });
 
     let handle_close_detail = Callback::new(move |_| {
-        set_selected_content.set(None);
+        set_selected_topic_id.set(None);
     });
 
     let diagram_props = DiagramData {

@@ -66,12 +66,20 @@ pub struct Dependency {
     pub to: &'static str,
 }
 
+/// Type of resource badge.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum BadgeKind {
+    Official,
+    OpenSource,
+    Other(&'static str),
+}
+
 /// A resource link for a topic.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Resource {
     pub label: &'static str,
     pub url: &'static str,
-    pub badge: &'static str, // "Official", "OpenSource"
+    pub badge: BadgeKind,
 }
 
 /// Detailed content for a topic (Title, Description, Resources).
