@@ -1,4 +1,5 @@
 use crate::models::roadmap::{BadgeKind, TopicContent};
+use leptos::leptos_dom::helpers::{TimeoutHandle, set_timeout_with_handle};
 use leptos::{ev::KeyboardEvent, *};
 use std::time::Duration;
 use web_sys::window;
@@ -19,6 +20,15 @@ pub fn TopicDetail(content: TopicContent, on_close: Callback<()>) -> impl IntoVi
     let _cmd_slug = content.title.to_lowercase().replace(" ", "-");
     let resources_len = content.resources.len();
     let content_for_keydown = content.clone();
+
+    // Store handle for cleanup
+    let timeout_handle = store_value(None::<TimeoutHandle>);
+
+    on_cleanup(move || {
+        if let Some(handle) = timeout_handle.get_value() {
+            handle.clear();
+        }
+    });
 
     let handle_keydown = move |ev: KeyboardEvent| {
         let current_state = state.get();
@@ -58,7 +68,8 @@ pub fn TopicDetail(content: TopicContent, on_close: Callback<()>) -> impl IntoVi
                     set_state.set(TerminalState::Opening);
                     // Open Link Logic
                     let url = content_for_keydown.resources[idx].url;
-                    set_timeout(
+
+                    let handle = set_timeout_with_handle(
                         move || {
                             if let Some(w) = window() {
                                 let _ = w.open_with_url_and_target(url, "_blank");
@@ -67,7 +78,10 @@ pub fn TopicDetail(content: TopicContent, on_close: Callback<()>) -> impl IntoVi
                             set_state.set(TerminalState::Browsing);
                         },
                         Duration::from_millis(800),
-                    ); // Fake delay for realism
+                    )
+                    .ok();
+
+                    timeout_handle.set_value(handle);
                 }
                 "n" | "N" | "Escape" => {
                     set_state.set(TerminalState::Browsing); // Cancel
