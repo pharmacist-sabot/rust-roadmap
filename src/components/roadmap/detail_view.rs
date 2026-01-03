@@ -87,7 +87,15 @@ pub fn TopicDetail(content: TopicContent, on_close: Callback<()>) -> impl IntoVi
     });
 
     view! {
-        <div class="terminal-overlay" on:keydown=handle_keydown tabindex="-1" ref=container_ref>
+        <div
+            class="terminal-overlay"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="terminal-title"
+            on:keydown=handle_keydown
+            tabindex="-1"
+            ref=container_ref
+        >
             // Backdrop
             <div class="flex-grow w-full cursor-pointer" on:click=move |_| on_close.call(())></div>
 
@@ -100,7 +108,7 @@ pub fn TopicDetail(content: TopicContent, on_close: Callback<()>) -> impl IntoVi
                         <span class="term-btn term-min"></span>
                         <span class="term-btn term-max"></span>
                     </div>
-                    <div class="terminal-title">"rust-roadmap — interactive-tui"</div>
+                    <div class="terminal-title" id="terminal-title">"rust-roadmap — interactive-tui"</div>
                     <div class="w-10"></div>
                 </div>
 
