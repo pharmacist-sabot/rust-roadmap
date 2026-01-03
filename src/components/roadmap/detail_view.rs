@@ -97,7 +97,7 @@ pub fn TopicDetail(content: TopicContent, on_close: Callback<()>) -> impl IntoVi
             ref=container_ref
         >
             // Backdrop
-            <div class="flex-grow w-full cursor-pointer" on:click=move |_| on_close.call(())></div>
+            <div class="flex-grow w-full terminal-backdrop" on:click=move |_| on_close.call(())></div>
 
             // Terminal Panel
             <div class="terminal-panel" on:click=move |e| e.stop_propagation()>
