@@ -15,10 +15,10 @@ pub struct LayoutConfig {
 impl Default for LayoutConfig {
     fn default() -> Self {
         Self {
-            node_width: 180.0,
+            node_width: 260.0,
             node_height: 40.0,
             center_x: 600.0,    // Wide canvas center
-            col_spacing: 150.0, // Gap between Spine and Branches
+            col_spacing: 200.0, // Gap between Spine and Branches
             node_spacing_y: 20.0,
             section_spacing: 60.0,
         }

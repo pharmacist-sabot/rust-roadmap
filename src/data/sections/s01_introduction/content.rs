@@ -4,11 +4,13 @@ pub fn get_content(id: &str) -> Option<TopicContent> {
     match id {
         "intro" => Some(TopicContent {
             title: "Introduction",
-            description: "Rust is a modern system programming language focused on performance, \
-            safety, and concurrency. It accomplishes these goals without having a \
-            garbage collector, making it a useful language for a number of use cases \
-            other languages aren't good at. Its syntax is similar to C++, but Rust offers \
-            better memory safety while maintaining high performance.",
+            description: "Rust is a modern systems programming language developed by Graydon Hoare at
+            Mozilla Research starting in 2010, achieving its first stable 1.0 release in 2015.
+            It emphasizes performance matching C++ speeds, memory safety through a unique ownership
+            model and borrow checker that prevents data races and null pointer issues at compile time,
+            and concurrency without a garbage collector. With expressive features like pattern matching,
+            traits, and zero-cost abstractions, Rust ensures reliability and efficiency, making it
+            ideal for systems, web, embedded, and high-performance applications.",
             resources: vec![
                 Resource {
                     label: "Rust Programming Language",
