@@ -6,262 +6,242 @@
         <title>Rust Roadmap</title>
 
         <script src="https://cdn.tailwindcss.com"></script>
-        <link
-            href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap"
-            rel="stylesheet"
-        />
+        
+        <!-- IMPORT JETBRAINS MONO & INTER -->
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
 
         <style>
+            :root {
+                --rust-orange: #FF4400;
+                --rust-dark: #0b0b0b;
+                --terminal-bg: #1e1e1e; /* VS Code Dark style */
+                --terminal-header: #2d2d2d;
+                --text-main: #e5e5e5;
+                --text-dim: #a3a3a3;
+            }
+
             body {
                 font-family: "Inter", sans-serif;
-                background-color: #050505; /* Deep Void Black */
-                color: #e5e5e5;
+                background-color: #050505;
+                color: var(--text-main);
                 margin: 0;
                 padding: 0;
+                overflow-x: hidden; /* Prevent horizontal scroll */
             }
             
             .roadmap-page {
                 min-height: 100vh;
                 background-color: #050505;
                 padding: 20px;
+                /* Grid Background */
                 background-image: 
-                    radial-gradient(circle at 50% 0%, #1a0b00 0%, transparent 60%),
-                    linear-gradient(rgba(255, 68, 0, 0.03) 1px, transparent 1px),
-                    linear-gradient(90deg, rgba(255, 68, 0, 0.03) 1px, transparent 1px);
-                background-size: 100% 100%, 40px 40px, 40px 40px;
+                    linear-gradient(rgba(255, 68, 0, 0.05) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(255, 68, 0, 0.05) 1px, transparent 1px);
+                background-size: 40px 40px;
             }
             
-            .roadmap-header {
-                text-align: center;
-                margin-bottom: 40px;
+            /* Typography Override */
+            h1, h2, h3, .mono-font {
+                font-family: 'JetBrains Mono', monospace;
             }
-            
+
+            .roadmap-header { text-align: center; margin-bottom: 40px; }
             .roadmap-header h1 {
-                font-size: 3rem;
-                font-weight: 800;
-                color: #ffffff;
-                text-shadow: 0 0 20px rgba(255, 68, 0, 0.5);
-                margin: 0 0 10px 0;
-                letter-spacing: -1px;
+                font-size: 3rem; font-weight: 800; color: #fff;
+                text-shadow: 0 0 20px rgba(255, 68, 0, 0.5); margin: 0 0 10px 0; letter-spacing: -1px;
+            }
+            .roadmap-subtitle { font-size: 1.2rem; color: #a3a3a3; margin: 0; }
+            .roadmap-diagram { display: block; margin: 0 auto; max-width: 100%; height: auto; }
+            
+            @media (max-width: 640px) {
+                .roadmap-header h1 { font-size: 2rem; }
+                .roadmap-subtitle { font-size: 1rem; }
             }
             
-            .roadmap-subtitle {
-                font-size: 1.2rem;
-                color: #a3a3a3;
-                margin: 0;
-            }
+            /* Node & Edge Styles (คงเดิม) */
+            .section-header { fill: #737373; font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; text-anchor: middle; font-family: 'JetBrains Mono', monospace; }
+            .roadmap-node .node-rect { stroke-width: 2; rx: 4px; transition: all 0.3s ease; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.5)); }
+            .roadmap-node .node-text { font-size: 12px; pointer-events: none; text-anchor: middle; dominant-baseline: middle; font-family: 'JetBrains Mono', monospace; }
             
-            .roadmap-diagram {
-                display: block;
-                margin: 0 auto;
-                max-width: 100%;
-                height: auto;
-            }
+            .type-main .node-rect { fill: #111; stroke: #FF4400; filter: drop-shadow(0 0 10px rgba(255, 68, 0, 0.4)); }
+            .type-main .node-text { fill: #FFF; font-weight: 800; text-shadow: 0 0 5px rgba(255, 68, 0, 0.8); }
+            .type-sub .node-rect { fill: #1A1A1A; stroke: #FF8800; stroke-width: 1.5; }
+            .type-sub .node-text { fill: #E5E5E5; font-weight: 500; }
+            .roadmap-node:hover .node-rect { cursor: pointer; fill: #222; stroke: #fff; filter: drop-shadow(0 0 15px rgba(255, 68, 0, 0.8)); }
             
-            /* Section Headers */
-            .section-header {
-                fill: #737373;
-                font-size: 14px;
-                font-weight: 700;
-                font-family: "Inter", sans-serif;
-                text-transform: uppercase;
-                letter-spacing: 0.1em;
-                text-anchor: middle;
-            }
-            
-            /* Node Styles */
-            .roadmap-node .node-rect {
-                stroke-width: 2;
-                rx: 4px;
-                transition: all 0.3s ease;
-                filter: drop-shadow(0 4px 6px rgba(0,0,0,0.5));
-            }
-            
-            .roadmap-node .node-text {
-                font-size: 12px;
-                font-family: "Inter", sans-serif;
-                pointer-events: none;
-                text-anchor: middle;
-                dominant-baseline: middle;
-            }
+            .roadmap-edge { stroke: #525252; stroke-width: 2; fill: none; }
+            .edge-cross-section { stroke: #FF4400; stroke-dasharray: 4, 4; opacity: 0.8; }
+            .arrowhead-fill { fill: #FF4400; }
 
-            /* --- TYPE: MAIN (Cyber Rust) --- */
-            .type-main .node-rect {
-                fill: #111111; /* Dark Matter */
-                stroke: #FF4400; /* Neon Rust Orange */
-                filter: drop-shadow(0 0 15px rgba(255, 68, 0, 0.6)); /* Intense Glow */
-            }
-            .type-main .node-text {
-                fill: #FFFFFF;
-                font-weight: 800;
-                text-shadow: 0 0 5px rgba(255, 68, 0, 0.8);
-            }
-
-            /* --- TYPE: SUB (Dark Glass) --- */
-            .type-sub .node-rect {
-                fill: #1A1A1A; /* Dark Grey Surface */
-                stroke: #FF8800; /* Amber Neon */
-                stroke-width: 1.5;
-            }
-            .type-sub .node-text {
-                fill: #E5E5E5;
-                font-weight: 500;
-            }
+            /* =========================================
+               TERMINAL DRAWER STYLES (New!)
+               ========================================= */
             
-            .roadmap-node:hover .node-rect {
-                cursor: pointer;
-                fill: #222222;
-                stroke: #ffffff;
-                filter: drop-shadow(0 0 20px rgba(255, 68, 0, 1.0));
-            }
-            
-            /* Edge Styles */
-            .roadmap-edge {
-                stroke: #525252; /* Dim Metal */
-                stroke-width: 2;
-                fill: none;
-            }
-
-            .edge-cross-section {
-                stroke: #FF4400; /* Neon Laser */
-                stroke-dasharray: 4, 4;
-                opacity: 0.8;
-                filter: drop-shadow(0 0 5px rgba(255, 68, 0, 0.5));
-            }
-            
-            .arrowhead-fill {
-                fill: #FF4400;
-                filter: drop-shadow(0 0 5px rgba(255, 68, 0, 0.8));
-            }
-
-            /* --- Modal Styles --- */
-            .modal-overlay {
+            .terminal-overlay {
                 position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background-color: rgba(0, 0, 0, 0.7);
+                top: 0; left: 0; right: 0; bottom: 0;
+                z-index: 50;
+                pointer-events: none; /* Let clicks pass through to diagram if not hitting panel */
                 display: flex;
-                justify-content: center;
-                align-items: center;
-                z-index: 1000;
-                backdrop-filter: blur(5px);
+                flex-direction: column;
+                justify-content: flex-end;
             }
 
-            .modal-content {
-                background-color: #111;
-                border: 1px solid #333;
-                border-radius: 12px;
-                padding: 30px;
-                max-width: 600px;
-                width: 90%;
-                box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
-                position: relative;
-                animation: modalFadeIn 0.3s ease;
+            .terminal-backdrop {
+                pointer-events: auto;
+                cursor: pointer;
             }
 
-            @keyframes modalFadeIn {
-                from { opacity: 0; transform: translateY(20px); }
-                to { opacity: 1; transform: translateY(0); }
+            .terminal-panel {
+                pointer-events: auto; /* Re-enable clicks */
+                background-color: var(--terminal-bg);
+                width: 100%;
+                max-width: 1000px;
+                margin: 0 auto;
+                height: 50vh; /* Half screen */
+                max-height: 600px;
+                border-top: 2px solid var(--rust-orange);
+                box-shadow: 0 -10px 50px rgba(0,0,0,0.8);
+                display: flex;
+                flex-direction: column;
+                
+                /* Animation: Slide Up */
+                animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+                border-top-left-radius: 8px;
+                border-top-right-radius: 8px;
             }
 
-            .modal-header {
+            @keyframes slideUp {
+                from { transform: translateY(100%); opacity: 0; }
+                to { transform: translateY(0); opacity: 1; }
+            }
+
+            /* Terminal Header (Window Bar) */
+            .terminal-header {
+                background-color: var(--terminal-header);
+                padding: 8px 16px;
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
-                margin-bottom: 20px;
                 border-bottom: 1px solid #333;
-                padding-bottom: 15px;
-            }
-
-            .modal-header h2 {
-                margin: 0;
-                color: #fff;
-                font-size: 2rem;
-            }
-
-            .close-btn {
-                background: none;
-                border: none;
+                font-family: 'JetBrains Mono', monospace;
+                font-size: 0.85rem;
                 color: #888;
-                font-size: 2rem;
-                cursor: pointer;
-                padding: 0;
-                line-height: 1;
-                transition: color 0.2s;
-            }
-            .close-btn:hover {
-                color: #fff;
+                border-top-left-radius: 6px;
+                border-top-right-radius: 6px;
             }
 
-            .topic-description {
-                line-height: 1.6;
-                color: #ddd;
-                margin-bottom: 30px;
+            .terminal-controls {
+                display: flex;
+                gap: 8px;
             }
 
-            .resources-section h3 {
-                border-bottom: 1px solid #22c55e;
+            .term-btn {
+                width: 12px; height: 12px; border-radius: 50%;
                 display: inline-block;
-                padding-bottom: 5px;
-                margin-bottom: 15px;
-                color: #22c55e;
-                font-size: 1rem;
-                text-transform: uppercase;
-                letter-spacing: 0.05em;
+            }
+            .term-close { background-color: #ff5f56; cursor: pointer; }
+            .term-min { background-color: #ffbd2e; }
+            .term-max { background-color: #27c93f; }
+
+            /* Terminal Content */
+            .terminal-body {
+                padding: 24px;
+                overflow-y: auto;
+                font-family: 'Inter', sans-serif; /* Readable body text */
+                color: #ccc;
             }
 
-            .resource-item {
+            /* Command Line Prompt Style */
+            .cmd-prompt {
+                font-family: 'JetBrains Mono', monospace;
+                margin-bottom: 20px;
+                padding-bottom: 15px;
+                border-bottom: 1px solid #333;
+                font-size: 1.1rem;
+            }
+            .cmd-user { color: #4ade80; } /* Green */
+            .cmd-path { color: #60a5fa; } /* Blue */
+            .cmd-git  { color: #fbbf24; } /* Yellow */
+            
+            /* Content Typography */
+            .topic-title {
+                font-family: 'JetBrains Mono', monospace;
+                font-size: 2rem;
+                color: #fff;
+                margin-bottom: 1rem;
                 display: flex;
                 align-items: center;
-                margin-bottom: 12px;
+                gap: 10px;
+            }
+            .topic-hash { color: var(--rust-orange); }
+
+            .topic-desc {
+                font-size: 1.1rem;
+                line-height: 1.7;
+                color: #d4d4d4;
+                margin-bottom: 2rem;
+                max-width: 800px;
             }
 
-            .badge {
-                font-size: 0.75rem;
-                padding: 4px 10px;
-                border-radius: 9999px;
-                margin-right: 12px;
-                font-weight: 600;
-                min-width: 80px;
-                text-align: center;
+            /* Resources Grid */
+            .resources-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+                gap: 16px;
             }
 
-            .badge.official {
-                background-color: #2563eb;
-                color: white;
-            }
-            
-            .badge.opensource {
-                background-color: #000;
+            .resource-card {
+                background-color: #252526;
                 border: 1px solid #333;
-                color: #fff;
+                padding: 12px 16px;
+                border-radius: 6px;
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                text-decoration: none;
+                transition: all 0.2s;
             }
-            
-            .badge.default {
-                background-color: #444;
-                color: #fff;
+            .resource-card:hover {
+                border-color: var(--rust-orange);
+                background-color: #2d2d2d;
+                transform: translateY(-2px);
             }
 
-            .resource-link {
-                color: #e5e5e5;
-                text-decoration: underline;
-                text-decoration-thickness: 1px;
-                text-underline-offset: 4px;
-                transition: all 0.2s;
-                font-weight: 500;
+            .res-icon { font-size: 1.5rem; }
+            .res-info { display: flex; flex-direction: column; }
+            .res-title { 
+                font-family: 'JetBrains Mono', monospace; 
+                font-size: 0.9rem; 
+                font-weight: 700; 
+                color: #e5e5e5; 
             }
-            .resource-link:hover {
-                color: #fff;
-                text-decoration-color: #fff;
+            .res-badge {
+                font-size: 0.7rem;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+                color: #888;
+                margin-top: 2px;
+            }
+            .blink-cursor::after {
+                content: "█";
+                animation: blink 1s step-end infinite;
+                color: var(--rust-orange);
+                margin-left: 4px;
+            }
+
+            @keyframes blink {
+                0%, 100% { opacity: 1; }
+                50% { opacity: 0; }
             }
         </style>
 
         
 <script type="module">
-import init, * as bindings from '/rust-roadmap/rust-roadmap-dbbd3416c9c36163.js';
-const wasm = await init({ module_or_path: '/rust-roadmap/rust-roadmap-dbbd3416c9c36163_bg.wasm' });
+import init, * as bindings from '/rust-roadmap/rust-roadmap-a3ab0b4767308a93.js';
+const wasm = await init({ module_or_path: '/rust-roadmap/rust-roadmap-a3ab0b4767308a93_bg.wasm' });
 
 
 window.wasmBindings = bindings;
@@ -270,6 +250,6 @@ window.wasmBindings = bindings;
 dispatchEvent(new CustomEvent("TrunkApplicationStarted", {detail: {wasm}}));
 
 </script>
-    <link rel="modulepreload" href="/rust-roadmap/rust-roadmap-dbbd3416c9c36163.js" crossorigin="anonymous" integrity="sha384-fb4Qq61PE4aGUgBJES22tVvOzxj7rW88linWLTm+s+1apG997hp8HZjVFaDf6AhN"><link rel="preload" href="/rust-roadmap/rust-roadmap-dbbd3416c9c36163_bg.wasm" crossorigin="anonymous" integrity="sha384-YKq1S2aexmAwncKUNs9cz48wvA487xaNlDJbObyhmdrBlcPjWzmp/8BLPOmub3Vs" as="fetch" type="application/wasm"></head>
+    <link rel="modulepreload" href="/rust-roadmap/rust-roadmap-a3ab0b4767308a93.js" crossorigin="anonymous" integrity="sha384-pH9YT81MvUIQkXcowXdI0WzDkUWbaGInPhwBQT+89obSnnp/WnQzroBw9Hh5Ttzd"><link rel="preload" href="/rust-roadmap/rust-roadmap-a3ab0b4767308a93_bg.wasm" crossorigin="anonymous" integrity="sha384-bF6SJkLwLu/2uDLQYZ1LKV2F8nOOxh9vwC3F+q6W3eLZOuNQEpaV5/gDq2W6Zqb7" as="fetch" type="application/wasm"></head>
     <body></body>
 </html>
