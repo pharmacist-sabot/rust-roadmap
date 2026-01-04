@@ -47,51 +47,52 @@ pub fn TopicDetail(content: TopicContent, on_close: Callback<()>) -> impl IntoVi
         timeout_handle.set_value(handle);
     };
 
-    let confirm_open_keydown = confirm_open.clone();
-
-    let handle_keydown = move |ev: KeyboardEvent| {
-        let current_state = state.get();
-        match current_state {
-            TerminalState::Browsing => match ev.key().as_str() {
-                "ArrowUp" | "k" => {
-                    // Support Vim bindings too!
-                    set_selected_idx.update(|i| {
-                        *i = if *i == 0 {
-                            resources_len.saturating_sub(1)
-                        } else {
-                            *i - 1
-                        }
-                    });
-                    ev.prevent_default();
-                }
-                "ArrowDown" | "j" => {
-                    set_selected_idx.update(|i| {
-                        *i = if *i >= resources_len.saturating_sub(1) {
-                            0
-                        } else {
-                            *i + 1
-                        }
-                    });
-                    ev.prevent_default();
-                }
-                "Enter" => {
-                    if resources_len > 0 {
-                        set_state.set(TerminalState::Confirming(selected_idx.get()));
+    let handle_keydown = {
+        let confirm_open = confirm_open.clone();
+        move |ev: KeyboardEvent| {
+            let current_state = state.get();
+            match current_state {
+                TerminalState::Browsing => match ev.key().as_str() {
+                    "ArrowUp" | "k" => {
+                        // Support Vim bindings too!
+                        set_selected_idx.update(|i| {
+                            *i = if *i == 0 {
+                                resources_len.saturating_sub(1)
+                            } else {
+                                *i - 1
+                            }
+                        });
+                        ev.prevent_default();
                     }
-                }
-                "Escape" => on_close.call(()),
-                _ => {}
-            },
-            TerminalState::Confirming(idx) => match ev.key().as_str() {
-                "y" | "Y" | "Enter" => {
-                    confirm_open_keydown(idx);
-                }
-                "n" | "N" | "Escape" => {
-                    set_state.set(TerminalState::Browsing); // Cancel
-                }
-                _ => {}
-            },
-            TerminalState::Opening => {} // Ignore input while opening
+                    "ArrowDown" | "j" => {
+                        set_selected_idx.update(|i| {
+                            *i = if *i >= resources_len.saturating_sub(1) {
+                                0
+                            } else {
+                                *i + 1
+                            }
+                        });
+                        ev.prevent_default();
+                    }
+                    "Enter" => {
+                        if resources_len > 0 {
+                            set_state.set(TerminalState::Confirming(selected_idx.get()));
+                        }
+                    }
+                    "Escape" => on_close.call(()),
+                    _ => {}
+                },
+                TerminalState::Confirming(idx) => match ev.key().as_str() {
+                    "y" | "Y" | "Enter" => {
+                        confirm_open(idx);
+                    }
+                    "n" | "N" | "Escape" => {
+                        set_state.set(TerminalState::Browsing); // Cancel
+                    }
+                    _ => {}
+                },
+                TerminalState::Opening => {} // Ignore input while opening
+            }
         }
     };
 
@@ -136,10 +137,10 @@ pub fn TopicDetail(content: TopicContent, on_close: Callback<()>) -> impl IntoVi
                         <div class="cmd-prompt text-sm text-gray-500 mb-2">
                             "$ cat README.md"
                         </div>
-                        <h2 class="text-lg md:text-xl font-bold text-white mb-2">
+                        <h2 class="text-lg md::text-xl font-bold text-white mb-2">
                             {"# "}{content.title}
                         </h2>
-                        <p class="text-sm md:text-base text-gray-400 leading-relaxed">
+                        <p class="text-sm md::text-base text-gray-400 leading-relaxed">
                             {content.description}
                         </p>
                     </div>
@@ -189,7 +190,7 @@ pub fn TopicDetail(content: TopicContent, on_close: Callback<()>) -> impl IntoVi
                             }.into_view(),
 
                             TerminalState::Confirming(idx) => {
-                                let confirm_open = confirm_open.clone();
+                                let on_confirm = confirm_open.clone();
                                 view! {
                                 <div>
                                     <div class="cmd-prompt text-green-400 mb-2">
@@ -209,7 +210,7 @@ pub fn TopicDetail(content: TopicContent, on_close: Callback<()>) -> impl IntoVi
                                     <div class="mt-4 flex gap-3 text-sm lg:hidden">
                                         <button
                                             class="px-3 py-1 border border-green-500 text-green-400 rounded hover:bg-green-500 hover:text-black"
-                                            on:click=move |_| confirm_open(idx)
+                                            on:click=move |_| on_confirm(idx)
                                         >
                                             "[Y] Yes"
                                         </button>
