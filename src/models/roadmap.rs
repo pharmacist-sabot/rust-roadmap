@@ -71,6 +71,9 @@ pub struct Dependency {
 pub enum BadgeKind {
     Official,
     OpenSource,
+    Article,
+    Video,
+    Feed,
     Other(&'static str),
 }
 

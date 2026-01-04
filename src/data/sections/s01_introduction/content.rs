@@ -34,6 +34,37 @@ pub fn get_content(id: &str) -> Option<TopicContent> {
                 },
             ],
         }),
+        "what_is_rust" => Some(TopicContent {
+            title: "What is Rust?",
+            description: "Rust is a modern system programming language focused on performance, safety, and concurrency. It accomplishes these goals without having a garbage collector, making it a useful language for a number of use cases other languages aren’t good at. Its syntax is similar to C++, but Rust offers better memory safety while maintaining high performance.",
+            resources: vec![
+                Resource {
+                    label: "Rust? What is it?",
+                    url: "https://www.rust-lang.org/learn/get-started",
+                    badge: BadgeKind::Official,
+                },
+                Resource {
+                    label: "Rust Programming Language",
+                    url: "https://www.rust-lang.org/",
+                    badge: BadgeKind::Official,
+                },
+                Resource {
+                    label: "What is Rust and why is it so popular?",
+                    url: "https://stackoverflow.blog/2020/01/20/what-is-rust-and-why-is-it-so-popular/",
+                    badge: BadgeKind::Article,
+                },
+                Resource {
+                    label: "What is Rust?",
+                    url: "https://www.youtube.com/watch?v=zF34dRivLOw", // Fireship: What is Rust?
+                    badge: BadgeKind::Video,
+                },
+                Resource {
+                    label: "Explore top posts about Rust",
+                    url: "https://www.reddit.com/r/rust/top/?t=all",
+                    badge: BadgeKind::Feed,
+                },
+            ],
+        }),
         _ => None,
     }
 }

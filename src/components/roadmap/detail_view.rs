@@ -160,7 +160,11 @@ pub fn TopicDetail(content: TopicContent, on_close: Callback<()>) -> impl IntoVi
                                             let row_class = if is_selected { "bg-[#2d2d2d] text-white" } else { "text-gray-500" };
                                             let badge_color = match res.badge {
                                                 BadgeKind::Official => "text-blue-400",
-                                                _ => "text-yellow-600",
+                                                BadgeKind::OpenSource => "text-green-400",
+                                                BadgeKind::Article => "text-yellow-300",
+                                                BadgeKind::Video => "text-red-400",
+                                                BadgeKind::Feed => "text-orange-400",
+                                                _ => "text-gray-500",
                                             };
 
                                             view! {
@@ -174,8 +178,12 @@ pub fn TopicDetail(content: TopicContent, on_close: Callback<()>) -> impl IntoVi
                                                     <span class="text-orange-500 font-bold w-4">{cursor}</span>
                                                     <span class=format!("text-xs w-24 {}", badge_color)>
                                                         {match res.badge {
-                                                            BadgeKind::Official => "r--r--r--",
-                                                            _ => "rwx------",
+                                                            BadgeKind::Official => "r--r--r--",     // Read-only
+                                                            BadgeKind::OpenSource => "rwxr-xr-x",   // Executable
+                                                            BadgeKind::Article => "-rw-r--r--",     // File
+                                                            BadgeKind::Video => "-rw-r--r--",       // File
+                                                            BadgeKind::Feed => "lrwxrwxrwx",        // Symlink
+                                                            _ => "---------",
                                                         }}
                                                     </span>
                                                     <span class="font-mono">{res.label}</span>
