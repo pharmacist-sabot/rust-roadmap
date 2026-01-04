@@ -4,7 +4,6 @@ use leptos::{ev::KeyboardEvent, *};
 use std::time::Duration;
 use web_sys::window;
 
-/// State ของ Terminal
 #[derive(Clone, Copy, PartialEq, Eq)]
 enum TerminalState {
     Browsing,
@@ -19,7 +18,6 @@ pub fn TopicDetail(content: TopicContent, on_close: Callback<()>) -> impl IntoVi
     let (selected_idx, set_selected_idx) = create_signal(0); // Cursor position
     let _cmd_slug = content.title.to_lowercase().replace(" ", "-");
     let resources_len = content.resources.len();
-    let content_for_keydown = content.clone();
 
     // Store handle for cleanup
     let timeout_handle = store_value(None::<TimeoutHandle>);
@@ -29,6 +27,27 @@ pub fn TopicDetail(content: TopicContent, on_close: Callback<()>) -> impl IntoVi
             handle.clear();
         }
     });
+
+    let content_for_open = content.clone();
+    let confirm_open = move |idx: usize| {
+        set_state.set(TerminalState::Opening);
+        let url = content_for_open.resources[idx].url.to_string();
+
+        let handle = set_timeout_with_handle(
+            move || {
+                if let Some(w) = window() {
+                    let _ = w.open_with_url_and_target(&url, "_blank");
+                }
+                set_state.set(TerminalState::Browsing);
+            },
+            Duration::from_millis(800),
+        )
+        .ok();
+
+        timeout_handle.set_value(handle);
+    };
+
+    let confirm_open_keydown = confirm_open.clone();
 
     let handle_keydown = move |ev: KeyboardEvent| {
         let current_state = state.get();
@@ -65,23 +84,7 @@ pub fn TopicDetail(content: TopicContent, on_close: Callback<()>) -> impl IntoVi
             },
             TerminalState::Confirming(idx) => match ev.key().as_str() {
                 "y" | "Y" | "Enter" => {
-                    set_state.set(TerminalState::Opening);
-                    // Open Link Logic
-                    let url = content_for_keydown.resources[idx].url;
-
-                    let handle = set_timeout_with_handle(
-                        move || {
-                            if let Some(w) = window() {
-                                let _ = w.open_with_url_and_target(url, "_blank");
-                            }
-                            // Reset state after opening
-                            set_state.set(TerminalState::Browsing);
-                        },
-                        Duration::from_millis(800),
-                    )
-                    .ok();
-
-                    timeout_handle.set_value(handle);
+                    confirm_open_keydown(idx);
                 }
                 "n" | "N" | "Escape" => {
                     set_state.set(TerminalState::Browsing); // Cancel
@@ -185,7 +188,9 @@ pub fn TopicDetail(content: TopicContent, on_close: Callback<()>) -> impl IntoVi
                                 </div>
                             }.into_view(),
 
-                            TerminalState::Confirming(idx) => view! {
+                            TerminalState::Confirming(idx) => {
+                                let confirm_open = confirm_open.clone();
+                                view! {
                                 <div>
                                     <div class="cmd-prompt text-green-400 mb-2">
                                         "ferris@rust:~/resources $ open \"" {content.resources[idx].label} "\""
@@ -194,13 +199,35 @@ pub fn TopicDetail(content: TopicContent, on_close: Callback<()>) -> impl IntoVi
                                         "warning: you are about to open an external link."
                                     </div>
                                     <div class="text-white">
-                                        "Url: " <span class="text-blue-400 underline">{content.resources[idx].url}</span>
+                                        "Url: " <span class="text-blue-400 underline break-all">{content.resources[idx].url}</span>
                                     </div>
                                     <div class="mt-4 font-bold text-white blink-cursor">
                                         "Proceed? [Y/n] "
                                     </div>
+
+                                    // Touch fallback (Mobile/Tablet only)
+                                    <div class="mt-4 flex gap-3 text-sm lg:hidden">
+                                        <button
+                                            class="px-3 py-1 border border-green-500 text-green-400 rounded hover:bg-green-500 hover:text-black"
+                                            on:click=move |_| confirm_open(idx)
+                                        >
+                                            "[Y] Yes"
+                                        </button>
+
+                                        <button
+                                            class="px-3 py-1 border border-gray-600 text-gray-400 rounded hover:bg-gray-600 hover:text-black"
+                                            on:click=move |_| set_state.set(TerminalState::Browsing)
+                                        >
+                                            "[N] No"
+                                        </button>
+                                    </div>
+
+                                    <div class="mt-3 text-xs text-gray-600 lg:hidden">
+                                        "(Keyboard: Y / N / Enter)"
+                                    </div>
                                 </div>
-                            }.into_view(),
+                            }.into_view()
+                            },
 
                             TerminalState::Opening => view! {
                                 <div>
