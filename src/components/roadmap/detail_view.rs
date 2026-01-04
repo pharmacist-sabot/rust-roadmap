@@ -4,7 +4,6 @@ use leptos::{ev::KeyboardEvent, *};
 use std::time::Duration;
 use web_sys::window;
 
-/// State ของ Terminal
 #[derive(Clone, Copy, PartialEq, Eq)]
 enum TerminalState {
     Browsing,
@@ -19,7 +18,6 @@ pub fn TopicDetail(content: TopicContent, on_close: Callback<()>) -> impl IntoVi
     let (selected_idx, set_selected_idx) = create_signal(0); // Cursor position
     let _cmd_slug = content.title.to_lowercase().replace(" ", "-");
     let resources_len = content.resources.len();
-    let content_for_keydown = content.clone();
 
     // Store handle for cleanup
     let timeout_handle = store_value(None::<TimeoutHandle>);
@@ -30,65 +28,71 @@ pub fn TopicDetail(content: TopicContent, on_close: Callback<()>) -> impl IntoVi
         }
     });
 
-    let handle_keydown = move |ev: KeyboardEvent| {
-        let current_state = state.get();
-        match current_state {
-            TerminalState::Browsing => match ev.key().as_str() {
-                "ArrowUp" | "k" => {
-                    // Support Vim bindings too!
-                    set_selected_idx.update(|i| {
-                        *i = if *i == 0 {
-                            resources_len.saturating_sub(1)
-                        } else {
-                            *i - 1
-                        }
-                    });
-                    ev.prevent_default();
-                }
-                "ArrowDown" | "j" => {
-                    set_selected_idx.update(|i| {
-                        *i = if *i >= resources_len.saturating_sub(1) {
-                            0
-                        } else {
-                            *i + 1
-                        }
-                    });
-                    ev.prevent_default();
-                }
-                "Enter" => {
-                    if resources_len > 0 {
-                        set_state.set(TerminalState::Confirming(selected_idx.get()));
-                    }
-                }
-                "Escape" => on_close.call(()),
-                _ => {}
-            },
-            TerminalState::Confirming(idx) => match ev.key().as_str() {
-                "y" | "Y" | "Enter" => {
-                    set_state.set(TerminalState::Opening);
-                    // Open Link Logic
-                    let url = content_for_keydown.resources[idx].url;
+    let content_for_open = content.clone();
+    let confirm_open = move |idx: usize| {
+        set_state.set(TerminalState::Opening);
+        let url = content_for_open.resources[idx].url.to_string();
 
-                    let handle = set_timeout_with_handle(
-                        move || {
-                            if let Some(w) = window() {
-                                let _ = w.open_with_url_and_target(url, "_blank");
+        let handle = set_timeout_with_handle(
+            move || {
+                if let Some(w) = window() {
+                    let _ = w.open_with_url_and_target(&url, "_blank");
+                }
+                set_state.set(TerminalState::Browsing);
+            },
+            Duration::from_millis(800),
+        )
+        .ok();
+
+        timeout_handle.set_value(handle);
+    };
+
+    let handle_keydown = {
+        let confirm_open = confirm_open.clone();
+        move |ev: KeyboardEvent| {
+            let current_state = state.get();
+            match current_state {
+                TerminalState::Browsing => match ev.key().as_str() {
+                    "ArrowUp" | "k" => {
+                        // Support Vim bindings too!
+                        set_selected_idx.update(|i| {
+                            *i = if *i == 0 {
+                                resources_len.saturating_sub(1)
+                            } else {
+                                *i - 1
                             }
-                            // Reset state after opening
-                            set_state.set(TerminalState::Browsing);
-                        },
-                        Duration::from_millis(800),
-                    )
-                    .ok();
-
-                    timeout_handle.set_value(handle);
-                }
-                "n" | "N" | "Escape" => {
-                    set_state.set(TerminalState::Browsing); // Cancel
-                }
-                _ => {}
-            },
-            TerminalState::Opening => {} // Ignore input while opening
+                        });
+                        ev.prevent_default();
+                    }
+                    "ArrowDown" | "j" => {
+                        set_selected_idx.update(|i| {
+                            *i = if *i >= resources_len.saturating_sub(1) {
+                                0
+                            } else {
+                                *i + 1
+                            }
+                        });
+                        ev.prevent_default();
+                    }
+                    "Enter" => {
+                        if resources_len > 0 {
+                            set_state.set(TerminalState::Confirming(selected_idx.get()));
+                        }
+                    }
+                    "Escape" => on_close.call(()),
+                    _ => {}
+                },
+                TerminalState::Confirming(idx) => match ev.key().as_str() {
+                    "y" | "Y" | "Enter" => {
+                        confirm_open(idx);
+                    }
+                    "n" | "N" | "Escape" => {
+                        set_state.set(TerminalState::Browsing); // Cancel
+                    }
+                    _ => {}
+                },
+                TerminalState::Opening => {} // Ignore input while opening
+            }
         }
     };
 
@@ -122,7 +126,7 @@ pub fn TopicDetail(content: TopicContent, on_close: Callback<()>) -> impl IntoVi
                         <span class="term-btn term-min"></span>
                         <span class="term-btn term-max"></span>
                     </div>
-                    <div class="terminal-title" id="terminal-title">"rust-roadmap — interactive-tui"</div>
+                    <div class="terminal-title" id="terminal-title">"rust-roadmap"</div>
                     <div class="w-10"></div>
                 </div>
 
@@ -185,7 +189,9 @@ pub fn TopicDetail(content: TopicContent, on_close: Callback<()>) -> impl IntoVi
                                 </div>
                             }.into_view(),
 
-                            TerminalState::Confirming(idx) => view! {
+                            TerminalState::Confirming(idx) => {
+                                let on_confirm = confirm_open.clone();
+                                view! {
                                 <div>
                                     <div class="cmd-prompt text-green-400 mb-2">
                                         "ferris@rust:~/resources $ open \"" {content.resources[idx].label} "\""
@@ -194,13 +200,35 @@ pub fn TopicDetail(content: TopicContent, on_close: Callback<()>) -> impl IntoVi
                                         "warning: you are about to open an external link."
                                     </div>
                                     <div class="text-white">
-                                        "Url: " <span class="text-blue-400 underline">{content.resources[idx].url}</span>
+                                        "Url: " <span class="text-blue-400 underline break-all">{content.resources[idx].url}</span>
                                     </div>
                                     <div class="mt-4 font-bold text-white blink-cursor">
                                         "Proceed? [Y/n] "
                                     </div>
+
+                                    // Touch fallback (Mobile/Tablet only)
+                                    <div class="mt-4 flex gap-3 text-sm lg:hidden">
+                                        <button
+                                            class="px-3 py-1 border border-green-500 text-green-400 rounded hover:bg-green-500 hover:text-black"
+                                            on:click=move |_| on_confirm(idx)
+                                        >
+                                            "[Y] Yes"
+                                        </button>
+
+                                        <button
+                                            class="px-3 py-1 border border-gray-600 text-gray-400 rounded hover:bg-gray-600 hover:text-black"
+                                            on:click=move |_| set_state.set(TerminalState::Browsing)
+                                        >
+                                            "[N] No"
+                                        </button>
+                                    </div>
+
+                                    <div class="mt-3 text-xs text-gray-600 lg:hidden">
+                                        "(Keyboard: Y / N / Enter)"
+                                    </div>
                                 </div>
-                            }.into_view(),
+                            }.into_view()
+                            },
 
                             TerminalState::Opening => view! {
                                 <div>
