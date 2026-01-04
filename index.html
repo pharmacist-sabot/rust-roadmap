@@ -16,7 +16,7 @@
             :root {
                 --rust-orange: #FF4400;
                 --rust-dark: #0b0b0b;
-                --terminal-bg: #1e1e1e; /* VS Code Dark style */
+                --terminal-bg: #1e1e1e;
                 --terminal-header: #2d2d2d;
                 --text-main: #e5e5e5;
                 --text-dim: #a3a3a3;
@@ -28,21 +28,19 @@
                 color: var(--text-main);
                 margin: 0;
                 padding: 0;
-                overflow-x: hidden; /* Prevent horizontal scroll */
+                overflow-x: hidden;
             }
             
             .roadmap-page {
                 min-height: 100vh;
                 background-color: #050505;
                 padding: 20px;
-                /* Grid Background */
                 background-image: 
                     linear-gradient(rgba(255, 68, 0, 0.05) 1px, transparent 1px),
                     linear-gradient(90deg, rgba(255, 68, 0, 0.05) 1px, transparent 1px);
                 background-size: 40px 40px;
             }
             
-            /* Typography Override */
             h1, h2, h3, .mono-font {
                 font-family: 'JetBrains Mono', monospace;
             }
@@ -60,7 +58,6 @@
                 .roadmap-subtitle { font-size: 1rem; }
             }
             
-            /* Node & Edge Styles (คงเดิม) */
             .section-header { fill: #737373; font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; text-anchor: middle; font-family: 'JetBrains Mono', monospace; }
             .roadmap-node .node-rect { stroke-width: 2; rx: 4px; transition: all 0.3s ease; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.5)); }
             .roadmap-node .node-text { font-size: 12px; pointer-events: none; text-anchor: middle; dominant-baseline: middle; font-family: 'JetBrains Mono', monospace; }
@@ -75,15 +72,11 @@
             .edge-cross-section { stroke: #FF4400; stroke-dasharray: 4, 4; opacity: 0.8; }
             .arrowhead-fill { fill: #FF4400; }
 
-            /* =========================================
-               TERMINAL DRAWER STYLES (New!)
-               ========================================= */
-            
             .terminal-overlay {
                 position: fixed;
                 top: 0; left: 0; right: 0; bottom: 0;
                 z-index: 50;
-                pointer-events: none; /* Let clicks pass through to diagram if not hitting panel */
+                pointer-events: none;
                 display: flex;
                 flex-direction: column;
                 justify-content: flex-end;
@@ -95,19 +88,17 @@
             }
 
             .terminal-panel {
-                pointer-events: auto; /* Re-enable clicks */
+                pointer-events: auto;
                 background-color: var(--terminal-bg);
                 width: 100%;
                 max-width: 1000px;
                 margin: 0 auto;
-                height: 50vh; /* Half screen */
+                height: 65vh;
                 max-height: 600px;
                 border-top: 2px solid var(--rust-orange);
                 box-shadow: 0 -10px 50px rgba(0,0,0,0.8);
                 display: flex;
                 flex-direction: column;
-                
-                /* Animation: Slide Up */
                 animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
                 border-top-left-radius: 8px;
                 border-top-right-radius: 8px;
@@ -118,7 +109,6 @@
                 to { transform: translateY(0); opacity: 1; }
             }
 
-            /* Terminal Header (Window Bar) */
             .terminal-header {
                 background-color: var(--terminal-header);
                 padding: 8px 16px;
@@ -146,15 +136,13 @@
             .term-min { background-color: #ffbd2e; }
             .term-max { background-color: #27c93f; }
 
-            /* Terminal Content */
             .terminal-body {
                 padding: 24px;
                 overflow-y: auto;
-                font-family: 'Inter', sans-serif; /* Readable body text */
+                font-family: 'Inter', sans-serif;
                 color: #ccc;
             }
 
-            /* Command Line Prompt Style */
             .cmd-prompt {
                 font-family: 'JetBrains Mono', monospace;
                 margin-bottom: 20px;
@@ -162,11 +150,10 @@
                 border-bottom: 1px solid #333;
                 font-size: 1.1rem;
             }
-            .cmd-user { color: #4ade80; } /* Green */
-            .cmd-path { color: #60a5fa; } /* Blue */
-            .cmd-git  { color: #fbbf24; } /* Yellow */
+            .cmd-user { color: #4ade80; }
+            .cmd-path { color: #60a5fa; }
+            .cmd-git  { color: #fbbf24; }
             
-            /* Content Typography */
             .topic-title {
                 font-family: 'JetBrains Mono', monospace;
                 font-size: 2rem;
@@ -186,7 +173,6 @@
                 max-width: 800px;
             }
 
-            /* Resources Grid */
             .resources-grid {
                 display: grid;
                 grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -236,6 +222,43 @@
                 0%, 100% { opacity: 1; }
                 50% { opacity: 0; }
             }
+
+            @media (max-width: 640px) {
+                .terminal-panel {
+                    height: 100vh;
+                    max-height: none;
+                    border-radius: 0;
+                }
+
+                .terminal-body {
+                    padding: 16px 14px;
+                }
+
+                .terminal-body > * {
+                    max-width: 42ch;
+                    margin-left: auto;
+                    margin-right: auto;
+                }
+
+                .cmd-prompt {
+                    font-size: 0.9rem;
+                    opacity: 0.6;
+                    margin-bottom: 12px;
+                }
+
+                .topic-title {
+                    font-size: 1.4rem;
+                }
+
+                .topic-desc {
+                    font-size: 1rem;
+                    line-height: 1.65;
+                }
+
+                .resources-grid {
+                    grid-template-columns: 1fr;
+                }
+            }
         </style>
 
         
@@ -250,6 +273,6 @@ window.wasmBindings = bindings;
 dispatchEvent(new CustomEvent("TrunkApplicationStarted", {detail: {wasm}}));
 
 </script>
-    <link rel="modulepreload" href="/rust-roadmap/rust-roadmap-e483a07d25c73536.js" crossorigin="anonymous" integrity="sha384-prcs/XwakXxy5O90dV32mIQT538XrVrEdospXNZUPDUNww9FzapgTVAAEHw39Q0N"><link rel="preload" href="/rust-roadmap/rust-roadmap-e483a07d25c73536_bg.wasm" crossorigin="anonymous" integrity="sha384-SxxjTCehzJbkGclkXsHoj9nRVpiHCz04wUwWcyHh1XpUpnhafxlUHo4iy4K9b1e6" as="fetch" type="application/wasm"></head>
+    <link rel="modulepreload" href="/rust-roadmap/rust-roadmap-e483a07d25c73536.js" crossorigin="anonymous" integrity="sha384-KhHdl6s7NVgSjW6BoFVK+Km3pwxhoajePd+/VtGfPpHSpAndFJa7maozP0ttDOFH"><link rel="preload" href="/rust-roadmap/rust-roadmap-e483a07d25c73536_bg.wasm" crossorigin="anonymous" integrity="sha384-+ojXcFlK9d2mVboygwTdLrJw8Ox88PDBNagNAQgNaLb7wSqidS4KOmeYSkDNJk+u" as="fetch" type="application/wasm"></head>
     <body></body>
 </html>
