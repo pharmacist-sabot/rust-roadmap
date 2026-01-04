@@ -126,7 +126,7 @@ pub fn TopicDetail(content: TopicContent, on_close: Callback<()>) -> impl IntoVi
                         <span class="term-btn term-min"></span>
                         <span class="term-btn term-max"></span>
                     </div>
-                    <div class="terminal-title" id="terminal-title">"rust-roadmap — interactive-tui"</div>
+                    <div class="terminal-title" id="terminal-title">"rust-roadmap"</div>
                     <div class="w-10"></div>
                 </div>
 
@@ -137,10 +137,10 @@ pub fn TopicDetail(content: TopicContent, on_close: Callback<()>) -> impl IntoVi
                         <div class="cmd-prompt text-sm text-gray-500 mb-2">
                             "$ cat README.md"
                         </div>
-                        <h2 class="text-lg md::text-xl font-bold text-white mb-2">
+                        <h2 class="text-lg md:text-xl font-bold text-white mb-2">
                             {"# "}{content.title}
                         </h2>
-                        <p class="text-sm md::text-base text-gray-400 leading-relaxed">
+                        <p class="text-sm md:text-base text-gray-400 leading-relaxed">
                             {content.description}
                         </p>
                     </div>
