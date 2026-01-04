@@ -1,103 +1,247 @@
-use crate::models::roadmap::{BadgeKind, TopicContent};
-use leptos::leptos_dom::helpers::{TimeoutHandle, set_timeout_with_handle};
-use leptos::{ev::KeyboardEvent, *};
-use std::time::Duration;
+use crate::models::roadmap::TopicContent;
+use leptos::{ev::KeyboardEvent, html::Div, *};
 use web_sys::window;
 
-#[derive(Clone, Copy, PartialEq, Eq)]
-enum TerminalState {
-    Browsing,
-    Confirming(usize),
-    Opening,
+/// Log Types for the Terminal History
+#[derive(Clone, PartialEq, Eq, Debug)]
+enum LogType {
+    Command(String),
+    Output(String),
+    Error(String),
+    Link {
+        label: String,
+        url: String,
+        id: usize,
+    },
+    System(String),
+}
+
+#[derive(Clone, PartialEq, Eq, Debug)]
+struct LogLine {
+    content: LogType,
 }
 
 #[component]
 pub fn TopicDetail(content: TopicContent, on_close: Callback<()>) -> impl IntoView {
-    // 1. State
-    let (state, set_state) = create_signal(TerminalState::Browsing);
-    let (selected_idx, set_selected_idx) = create_signal(0); // Cursor position
-    let _cmd_slug = content.title.to_lowercase().replace(" ", "-");
-    let resources_len = content.resources.len();
+    // --- State ---
+    let (history, set_history) = create_signal::<Vec<LogLine>>(vec![]);
 
-    // Store handle for cleanup
-    let timeout_handle = store_value(None::<TimeoutHandle>);
+    // Command history for Up/Down navigation
+    let (cmd_history, set_cmd_history) = create_signal::<Vec<String>>(vec![]);
+    let (history_index, set_history_index) = create_signal::<Option<usize>>(None);
 
-    on_cleanup(move || {
-        if let Some(handle) = timeout_handle.get_value() {
-            handle.clear();
-        }
-    });
+    let (input, set_input) = create_signal(String::new());
 
-    let content_for_open = content.clone();
-    let confirm_open = move |idx: usize| {
-        set_state.set(TerminalState::Opening);
-        let url = content_for_open.resources[idx].url.to_string();
+    // We can use this to manually control cursor blink if needed, or just CSS
+    let (_cursor_visible, _set_cursor_visible) = create_signal(true);
 
-        let handle = set_timeout_with_handle(
-            move || {
-                if let Some(w) = window() {
-                    let _ = w.open_with_url_and_target(&url, "_blank");
-                }
-                set_state.set(TerminalState::Browsing);
-            },
-            Duration::from_millis(800),
-        )
-        .ok();
+    let content_ref = store_value(content.clone());
+    let container_ref = create_node_ref::<Div>();
 
-        timeout_handle.set_value(handle);
+    // --- Helpers ---
+    let push_log = move |log: LogType| {
+        set_history.update(|h| h.push(LogLine { content: log }));
+        // Request layout update to scroll
+        request_animation_frame(move || {
+            if let Some(d) = container_ref.get() {
+                d.set_scroll_top(d.scroll_height());
+            }
+        });
     };
 
-    let handle_keydown = {
-        let confirm_open = confirm_open.clone();
-        move |ev: KeyboardEvent| {
-            let current_state = state.get();
-            match current_state {
-                TerminalState::Browsing => match ev.key().as_str() {
-                    "ArrowUp" | "k" => {
-                        // Support Vim bindings too!
-                        set_selected_idx.update(|i| {
-                            *i = if *i == 0 {
-                                resources_len.saturating_sub(1)
-                            } else {
-                                *i - 1
+    let execute_command = move |cmd: String| {
+        let trimmed = cmd.trim();
+        push_log(LogType::Command(cmd.clone()));
+
+        // Add to history if not empty
+        if !trimmed.is_empty() {
+            set_cmd_history.update(|h| h.push(cmd.clone()));
+            set_history_index.set(None); // Reset history cursor
+        }
+
+        if trimmed.is_empty() {
+            return;
+        }
+
+        let parts: Vec<&str> = trimmed.split_whitespace().collect();
+        match parts[0] {
+            "help" => {
+                push_log(LogType::Output("Available commands:".to_string()));
+                push_log(LogType::Output("  ls       - List resources".to_string()));
+                push_log(LogType::Output(
+                    "  open <ID> - Open resource by ID".to_string(),
+                ));
+                push_log(LogType::Output("  cat      - Show description".to_string()));
+                push_log(LogType::Output("  clear    - Clear terminal".to_string()));
+                push_log(LogType::Output("  whoami   - Current user".to_string()));
+                push_log(LogType::Output("  exit     - Close terminal".to_string()));
+            }
+            "clear" => {
+                set_history.set(vec![]);
+            }
+            "exit" => {
+                on_close.call(());
+            }
+            "ls" => {
+                let c = content_ref.get_value();
+                push_log(LogType::System(format!(
+                    "Listing resources for '{}':",
+                    c.title
+                )));
+                for (i, res) in c.resources.iter().enumerate() {
+                    push_log(LogType::Link {
+                        label: format!("[{}] {}", i + 1, res.label), // 1-based index for UX
+                        url: res.url.to_string(),
+                        id: i,
+                    });
+                }
+            }
+            "cat" => {
+                let c = content_ref.get_value();
+                push_log(LogType::Output(c.description.to_string()));
+            }
+            "whoami" => {
+                push_log(LogType::Output("ferris".to_string()));
+            }
+            "open" => {
+                if parts.len() < 2 {
+                    push_log(LogType::Error("Usage: open <ID>".to_string()));
+                } else {
+                    if let Ok(id) = parts[1].parse::<usize>() {
+                        let c = content_ref.get_value();
+                        if id > 0 && id <= c.resources.len() {
+                            let idx = id - 1; // Convert back to 0-based
+                            let url = c.resources[idx].url.to_string();
+                            push_log(LogType::System(format!("Opening: {}", url)));
+                            if let Some(w) = window() {
+                                let _ = w.open_with_url_and_target(&url, "_blank");
                             }
-                        });
-                        ev.prevent_default();
-                    }
-                    "ArrowDown" | "j" => {
-                        set_selected_idx.update(|i| {
-                            *i = if *i >= resources_len.saturating_sub(1) {
-                                0
-                            } else {
-                                *i + 1
-                            }
-                        });
-                        ev.prevent_default();
-                    }
-                    "Enter" => {
-                        if resources_len > 0 {
-                            set_state.set(TerminalState::Confirming(selected_idx.get()));
+                        } else {
+                            push_log(LogType::Error(format!("ID {} not found.", id)));
                         }
+                    } else {
+                        push_log(LogType::Error("Invalid ID number.".to_string()));
                     }
-                    "Escape" => on_close.call(()),
-                    _ => {}
-                },
-                TerminalState::Confirming(idx) => match ev.key().as_str() {
-                    "y" | "Y" | "Enter" => {
-                        confirm_open(idx);
-                    }
-                    "n" | "N" | "Escape" => {
-                        set_state.set(TerminalState::Browsing); // Cancel
-                    }
-                    _ => {}
-                },
-                TerminalState::Opening => {} // Ignore input while opening
+                }
+            }
+            _ => {
+                push_log(LogType::Error(format!("command not found: {}", parts[0])));
             }
         }
     };
 
-    // Auto-focus container to capture keys (or attach to window via useEffect)
-    let container_ref = create_node_ref::<html::Div>();
+    // --- On Mount: Run 'ls' automatically ---
+    create_effect(move |_| {
+        // Run only once when history is empty
+        if history.get_untracked().is_empty() {
+            push_log(LogType::System(
+                "Welcome to Rust Roadmap Terminal v2.0".to_string(),
+            ));
+            push_log(LogType::System(
+                "Type 'help' to see available commands.".to_string(),
+            ));
+            execute_command("ls".to_string());
+        }
+    });
+
+    // --- Handlers ---
+    let handle_keydown = move |ev: KeyboardEvent| {
+        let key = ev.key();
+
+        // Prevent default behavior for Arrow keys to stop scrolling if needed
+        if key == "ArrowUp" || key == "ArrowDown" {
+            ev.prevent_default();
+        }
+
+        if ev.meta_key() || ev.ctrl_key() || ev.alt_key() {
+            return;
+        }
+
+        match key.as_str() {
+            "Enter" => {
+                let cmd = input.get();
+                set_input.set(String::new());
+                execute_command(cmd);
+            }
+            "Backspace" => {
+                set_input.update(|s| {
+                    let _ = s.pop();
+                });
+            }
+            "ArrowUp" => {
+                let cmds = cmd_history.get();
+                if cmds.is_empty() {
+                    return;
+                }
+
+                let current_idx = history_index.get();
+                let next_idx = match current_idx {
+                    None => Some(cmds.len() - 1),
+                    Some(i) => {
+                        if i > 0 {
+                            Some(i - 1)
+                        } else {
+                            Some(0)
+                        }
+                    }
+                };
+
+                if let Some(i) = next_idx {
+                    set_history_index.set(Some(i));
+                    set_input.set(cmds[i].clone());
+                }
+            }
+            "ArrowDown" => {
+                let cmds = cmd_history.get();
+                if cmds.is_empty() {
+                    return;
+                }
+
+                let current_idx = history_index.get();
+                let next_idx = match current_idx {
+                    None => None,
+                    Some(i) => {
+                        if i < cmds.len() - 1 {
+                            Some(i + 1)
+                        } else {
+                            None
+                        }
+                    }
+                };
+
+                set_history_index.set(next_idx);
+                if let Some(i) = next_idx {
+                    set_input.set(cmds[i].clone());
+                } else {
+                    set_input.set(String::new());
+                }
+            }
+            "Escape" => {
+                on_close.call(());
+            }
+            k if k.len() == 1 => {
+                // Printable characters
+                set_input.update(|s| s.push_str(k));
+            }
+            _ => {}
+        }
+
+        // Always scroll to bottom on typing
+        if let Some(d) = container_ref.get() {
+            d.set_scroll_top(d.scroll_height());
+        }
+    };
+
+    // helper for clicking a link (bypass typing)
+    let click_open_link = move |url: String| {
+        // Simulate typing the command for effect
+        push_log(LogType::Command(format!("open \"{}\"", url)));
+        if let Some(w) = window() {
+            let _ = w.open_with_url_and_target(&url, "_blank");
+        }
+    };
+
+    // Auto focus
     create_effect(move |_| {
         if let Some(div) = container_ref.get() {
             let _ = div.focus();
@@ -105,142 +249,104 @@ pub fn TopicDetail(content: TopicContent, on_close: Callback<()>) -> impl IntoVi
     });
 
     view! {
-        <div
+         <div
             class="terminal-overlay"
             role="dialog"
             aria-modal="true"
-            aria-labelledby="terminal-title"
             on:keydown=handle_keydown
             tabindex="-1"
             ref=container_ref
+            style="outline: none;" // Remove focus ring
         >
-            // Backdrop
             <div class="flex-grow w-full terminal-backdrop" on:click=move |_| on_close.call(())></div>
 
-            // Terminal Panel
             <div class="terminal-panel" on:click=move |e| e.stop_propagation()>
-                // Header
+                // --- Window Header ---
                 <div class="terminal-header">
                     <div class="terminal-controls">
                         <span class="term-btn term-close" on:click=move |_| on_close.call(())></span>
                         <span class="term-btn term-min"></span>
                         <span class="term-btn term-max"></span>
                     </div>
-                    <div class="terminal-title" id="terminal-title">"rust-roadmap"</div>
+                    // Dynamic title based on CWD
+                    <div class="terminal-title">
+                        {move || format!("ferris@rust: ~/{}", content_ref.get_value().title.to_lowercase().replace(" ", "-"))}
+                    </div>
                     <div class="w-10"></div>
                 </div>
 
-                // Body
-                <div class="terminal-body font-mono">
-                    // Static Description (Always visible at top)
-                    <div class="mb-6 border-b border-gray-800 pb-4">
-                        <div class="cmd-prompt text-sm text-gray-500 mb-2">
-                            "$ cat README.md"
-                        </div>
-                        <h2 class="text-lg md:text-xl font-bold text-white mb-2">
-                            {"# "}{content.title}
-                        </h2>
-                        <p class="text-sm md:text-base text-gray-400 leading-relaxed">
-                            {content.description}
-                        </p>
-                    </div>
-
-                    // Interactive Area
-                    <div class="interactive-zone min-h-[200px]">
-                        {move || match state.get() {
-                            TerminalState::Browsing => view! {
-                                <div>
-                                    <div class="cmd-prompt text-green-400 mb-2">
-                                        "ferris@rust:~/resources $ ls -l"
-                                    </div>
-                                    <div class="flex flex-col gap-1">
-                                        {content.resources.iter().enumerate().map(|(i, res)| {
-                                            let is_selected = i == selected_idx.get();
-                                            let cursor = if is_selected { ">" } else { " " };
-                                            let row_class = if is_selected { "bg-[#2d2d2d] text-white" } else { "text-gray-500" };
-                                            let badge_color = match res.badge {
-                                                BadgeKind::Official => "text-blue-400",
-                                                _ => "text-yellow-600",
-                                            };
-
-                                            view! {
-                                                <div
-                                                    class=format!("flex items-center gap-3 px-2 py-1 cursor-pointer {}", row_class)
-                                                    on:click=move |_| {
-                                                        set_selected_idx.set(i);
-                                                        set_state.set(TerminalState::Confirming(i));
-                                                    }
-                                                >
-                                                    <span class="text-orange-500 font-bold w-4">{cursor}</span>
-                                                    <span class=format!("text-xs w-24 {}", badge_color)>
-                                                        {match res.badge {
-                                                            BadgeKind::Official => "r--r--r--",
-                                                            _ => "rwx------",
-                                                        }}
-                                                    </span>
-                                                    <span class="font-mono">{res.label}</span>
-                                                </div>
-                                            }
-                                        }).collect_view()}
-                                    </div>
-                                    <div class="mt-4 text-xs text-gray-600">
-                                        "[Use Arrow Keys/Vim to move, Enter to select]"
-                                    </div>
+                // --- Terminal Body (History + Prompt) ---
+                <div class="terminal-body font-mono text-sm leading-relaxed" style="scroll-behavior: smooth;">
+                    // 1. History
+                    {move || history.get().into_iter().map(|line| {
+                        match line.content {
+                            LogType::Command(cmd) => view! {
+                                <div class="mb-1">
+                                    <span class="text-green-400 mr-2 md:mr-4">"ferris@rust:~$ "</span>
+                                    <span class="text-white">{cmd}</span>
                                 </div>
                             }.into_view(),
-
-                            TerminalState::Confirming(idx) => {
-                                let on_confirm = confirm_open.clone();
-                                view! {
-                                <div>
-                                    <div class="cmd-prompt text-green-400 mb-2">
-                                        "ferris@rust:~/resources $ open \"" {content.resources[idx].label} "\""
-                                    </div>
-                                    <div class="text-yellow-300 mb-2">
-                                        "warning: you are about to open an external link."
-                                    </div>
-                                    <div class="text-white">
-                                        "Url: " <span class="text-blue-400 underline break-all">{content.resources[idx].url}</span>
-                                    </div>
-                                    <div class="mt-4 font-bold text-white blink-cursor">
-                                        "Proceed? [Y/n] "
-                                    </div>
-
-                                    // Touch fallback (Mobile/Tablet only)
-                                    <div class="mt-4 flex gap-3 text-sm lg:hidden">
-                                        <button
-                                            class="px-3 py-1 border border-green-500 text-green-400 rounded hover:bg-green-500 hover:text-black"
-                                            on:click=move |_| on_confirm(idx)
-                                        >
-                                            "[Y] Yes"
-                                        </button>
-
-                                        <button
-                                            class="px-3 py-1 border border-gray-600 text-gray-400 rounded hover:bg-gray-600 hover:text-black"
-                                            on:click=move |_| set_state.set(TerminalState::Browsing)
-                                        >
-                                            "[N] No"
-                                        </button>
-                                    </div>
-
-                                    <div class="mt-3 text-xs text-gray-600 lg:hidden">
-                                        "(Keyboard: Y / N / Enter)"
-                                    </div>
+                            LogType::Output(out) => view! {
+                                // Break all for long outputs
+                                <div class="mb-1 text-gray-300 w-full whitespace-pre-wrap pl-0 break-all">{out}</div>
+                            }.into_view(),
+                            LogType::Error(err) => view! {
+                                <div class="mb-1 text-red-400">{err}</div>
+                            }.into_view(),
+                            LogType::System(msg) => view! {
+                                <div class="mb-1 text-blue-400 italic opacity-80">{msg}</div>
+                            }.into_view(),
+                            LogType::Link { label, url, .. } => view! {
+                                <div class="mb-1">
+                                    <span
+                                        class="text-yellow-400 underline cursor-pointer hover:text-yellow-200 transition-colors"
+                                        on:click={
+                                            let u = url.clone();
+                                            move |_| click_open_link(u.clone())
+                                        }
+                                    >
+                                        {label}
+                                    </span>
                                 </div>
-                            }.into_view()
-                            },
+                            }.into_view(),
+                        }
+                    }).collect_view()}
 
-                            TerminalState::Opening => view! {
-                                <div>
-                                    <div class="text-green-500">
-                                        "Opening default browser..."
-                                    </div>
-                                    <div class="text-gray-500 text-sm mt-1">
-                                        "Child process spawned (PID 1337)"
-                                    </div>
-                                </div>
-                            }.into_view()
-                        }}
+                    // 2. Active Prompt
+                    <div class="flex items-center mt-2 group">
+                        <span class="text-green-400 mr-2 shrink-0 md:mr-4">"ferris@rust:~$ "</span>
+                        <span class="text-white whitespace-pre-wrap break-all">
+                            {move || input.get()}
+                            <span class="inline-block w-2.5 h-4 bg-gray-500 ml-0.5 animate-pulse align-middle"></span>
+                        </span>
+                    </div>
+
+                    // 3. Mobile Shortcuts (Quick Actions)
+                    <div class="mt-6 pt-4 border-t border-gray-800 lg:hidden flex gap-2 overflow-x-auto pb-2" on:click=move |e| e.stop_propagation()>
+                        <button
+                            class="px-3 py-1 bg-[#2d2d2d] rounded text-xs text-green-400 border border-gray-700 active:bg-gray-700"
+                            on:click=move |_| execute_command("ls".to_string())
+                        >
+                            "ls"
+                        </button>
+                        <button
+                            class="px-3 py-1 bg-[#2d2d2d] rounded text-xs text-blue-400 border border-gray-700 active:bg-gray-700"
+                            on:click=move |_| execute_command("help".to_string())
+                        >
+                            "help"
+                        </button>
+                        <button
+                            class="px-3 py-1 bg-[#2d2d2d] rounded text-xs text-yellow-400 border border-gray-700 active:bg-gray-700"
+                            on:click=move |_| execute_command("clear".to_string())
+                        >
+                            "clear"
+                        </button>
+                         <button
+                            class="px-3 py-1 bg-[#2d2d2d] rounded text-xs text-red-400 border border-gray-700 active:bg-gray-700"
+                            on:click=move |_| on_close.call(())
+                        >
+                            "exit"
+                        </button>
                     </div>
                 </div>
             </div>
