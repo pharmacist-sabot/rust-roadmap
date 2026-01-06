@@ -1,0 +1,110 @@
+/**
+ * roadmap.css - Roadmap Diagram & Layout
+ * 
+ * Styles for the main roadmap visualization including
+ * the page layout, SVG nodes, and connecting edges.
+ */
+
+
+
+.roadmap-page {
+    min-height: 100vh;
+    background-color: #050505;
+    padding: 20px;
+    background-image: 
+        linear-gradient(rgba(255, 68, 0, 0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 68, 0, 0.05) 1px, transparent 1px);
+    background-size: 40px 40px;
+}
+
+
+
+.roadmap-header { text-align: center; margin-bottom: 40px; }
+.roadmap-header h1 {
+    font-size: 3rem; font-weight: 800; color: #fff;
+    text-shadow: 0 0 20px rgba(255, 68, 0, 0.5); margin: 0 0 10px 0; letter-spacing: -1px;
+}
+.roadmap-subtitle { font-size: 1.2rem; color: #a3a3a3; margin: 0; }
+.roadmap-diagram { display: block; margin: 0 auto; max-width: 100%; height: auto; }
+
+
+
+.section-header { 
+    fill: #737373; 
+    font-size: 14px; 
+    font-weight: 700; 
+    text-transform: uppercase; 
+    letter-spacing: 0.1em; 
+    text-anchor: middle; 
+    font-family: 'JetBrains Mono', monospace; 
+}
+
+
+
+.roadmap-node .node-rect { 
+    stroke-width: 2; 
+    rx: 4px; 
+    transition: all 0.3s ease; 
+    filter: drop-shadow(0 4px 6px rgba(0,0,0,0.5)); 
+}
+.roadmap-node .node-text { 
+    font-size: 12px; 
+    pointer-events: none; 
+    text-anchor: middle; 
+    dominant-baseline: middle; 
+    font-family: 'JetBrains Mono', monospace; 
+}
+
+/* Main Topic Nodes (Primary) */
+.type-main .node-rect { 
+    fill: #111; 
+    stroke: #FF4400; 
+    filter: drop-shadow(0 0 10px rgba(255, 68, 0, 0.4)); 
+}
+.type-main .node-text { 
+    fill: #FFF; 
+    font-weight: 800; 
+    text-shadow: 0 0 5px rgba(255, 68, 0, 0.8); 
+}
+
+/* Sub Topic Nodes (Secondary) */
+.type-sub .node-rect { 
+    fill: #1A1A1A; 
+    stroke: #FF8800; 
+    stroke-width: 1.5; 
+}
+.type-sub .node-text { 
+    fill: #E5E5E5; 
+    font-weight: 500; 
+}
+
+/* Node Hover State */
+.roadmap-node:hover .node-rect { 
+    cursor: pointer; 
+    fill: #222; 
+    stroke: #fff; 
+    filter: drop-shadow(0 0 15px rgba(255, 68, 0, 0.8)); 
+}
+
+
+
+.roadmap-edge { 
+    stroke: #525252; 
+    stroke-width: 2; 
+    fill: none; 
+}
+.edge-cross-section { 
+    stroke: #FF4400; 
+    stroke-dasharray: 4, 4; 
+    opacity: 0.8; 
+}
+.arrowhead-fill { 
+    fill: #FF4400; 
+}
+
+
+
+@media (max-width: 640px) {
+    .roadmap-header h1 { font-size: 2rem; }
+    .roadmap-subtitle { font-size: 1rem; }
+}

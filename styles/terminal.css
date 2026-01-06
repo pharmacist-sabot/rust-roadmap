@@ -1,0 +1,409 @@
+/**
+ * terminal.css - Terminal UI Components
+ * 
+ * Styles for the terminal-style overlay panel that displays
+ * topic details and resources.
+ */
+
+
+
+.terminal-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    z-index: 50;
+    pointer-events: none;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+}
+
+.terminal-backdrop {
+    pointer-events: auto;
+    cursor: pointer;
+    flex-grow: 1;
+    width: 100%;
+}
+
+
+
+.terminal-panel {
+    pointer-events: auto;
+    background-color: var(--terminal-bg);
+    width: 100%;
+    max-width: 1000px;
+    margin: 0 auto;
+    height: 65vh;
+    max-height: 600px;
+    border-top: 2px solid var(--rust-orange);
+    box-shadow: 0 -10px 50px rgba(0,0,0,0.8);
+    display: flex;
+    flex-direction: column;
+    animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+}
+
+@keyframes slideUp {
+    from { transform: translateY(100%); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+
+
+.terminal-header {
+    background-color: var(--terminal-header);
+    padding: 8px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #333;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem;
+    color: #888;
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+}
+
+.terminal-controls {
+    display: flex;
+    gap: 8px;
+}
+
+.term-btn {
+    width: 12px; height: 12px; border-radius: 50%;
+    display: inline-block;
+}
+.term-close { background-color: #ff5f56; cursor: pointer; }
+.term-min { background-color: #ffbd2e; }
+.term-max { background-color: #27c93f; }
+
+
+
+.terminal-body {
+    padding: 24px;
+    overflow-y: auto;
+    font-family: 'Inter', sans-serif;
+    color: #ccc;
+}
+
+
+
+.cmd-prompt {
+    font-family: 'JetBrains Mono', monospace;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #333;
+    font-size: 1.1rem;
+}
+.cmd-user { color: #4ade80; }
+.cmd-path { color: #60a5fa; }
+.cmd-git  { color: #fbbf24; }
+
+
+
+.topic-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 2rem;
+    color: #fff;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.topic-hash { color: var(--rust-orange); }
+
+.topic-desc {
+    font-size: 1.1rem;
+    line-height: 1.7;
+    color: #d4d4d4;
+    margin-bottom: 2rem;
+    max-width: 800px;
+}
+
+
+
+.resources-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+}
+
+.resource-card {
+    background-color: #252526;
+    border: 1px solid #333;
+    padding: 12px 16px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+    transition: all 0.2s;
+}
+.resource-card:hover {
+    border-color: var(--rust-orange);
+    background-color: #2d2d2d;
+    transform: translateY(-2px);
+}
+
+.res-icon { font-size: 1.5rem; }
+.res-info { display: flex; flex-direction: column; }
+.res-title { 
+    font-family: 'JetBrains Mono', monospace; 
+    font-size: 0.9rem; 
+    font-weight: 700; 
+    color: #e5e5e5; 
+}
+.res-badge {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #888;
+    margin-top: 2px;
+}
+
+
+
+.blink-cursor::after {
+    content: "█";
+    display: inline-block;
+    transform: scaleX(0.5); /* Adjust thickness: 0.1 - 1.0 */
+    transform-origin: left;
+    animation: blink 1s step-end infinite;
+    color: var(--rust-orange);
+    margin-left: 4px;
+}
+
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+}
+
+
+
+.terminal-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem;
+    color: #888;
+}
+
+.terminal-spacer {
+    width: 40px;
+}
+
+
+
+.topic-section {
+    margin-bottom: 24px;
+    border-bottom: 1px solid #333;
+    padding-bottom: 16px;
+}
+
+.topic-cmd {
+    font-size: 0.875rem;
+    color: #6b7280;
+    margin-bottom: 8px;
+}
+
+.topic-heading {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 8px;
+}
+
+.topic-text {
+    font-size: 0.875rem;
+    color: #9ca3af;
+    line-height: 1.6;
+}
+
+
+
+.interactive-zone {
+    min-height: 200px;
+}
+
+
+
+.resource-prompt {
+    color: #4ade80;
+    margin-bottom: 8px;
+}
+
+.resource-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.resource-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 4px 8px;
+    cursor: pointer;
+    color: #6b7280;
+}
+
+.resource-row.selected {
+    background-color: #2d2d2d;
+    color: #fff;
+}
+
+.resource-cursor {
+    color: #f97316;
+    font-weight: 700;
+    width: 16px;
+}
+
+.resource-permission {
+    font-size: 0.75rem;
+    width: 96px;
+}
+
+.resource-label {
+    font-family: 'JetBrains Mono', monospace;
+}
+
+/* Badge Colors */
+.badge-official { color: #60a5fa; }
+.badge-opensource { color: #4ade80; }
+.badge-article { color: #fcd34d; }
+.badge-video { color: #f87171; }
+.badge-feed { color: #fb923c; }
+.badge-default { color: #6b7280; }
+
+
+
+.keyboard-hint {
+    margin-top: 16px;
+    font-size: 0.75rem;
+    color: #4b5563;
+}
+
+
+
+.confirm-warning {
+    color: #fcd34d;
+    margin-bottom: 8px;
+}
+
+.confirm-url {
+    color: #fff;
+}
+
+.confirm-url-link {
+    color: #60a5fa;
+    text-decoration: underline;
+    word-break: break-all;
+}
+
+.confirm-prompt {
+    margin-top: 16px;
+    font-weight: 700;
+    color: #fff;
+}
+
+
+
+.mobile-actions {
+    margin-top: 16px;
+    display: flex;
+    gap: 12px;
+    font-size: 0.875rem;
+}
+
+.btn-confirm {
+    padding: 4px 12px;
+    border: 1px solid #22c55e;
+    color: #4ade80;
+    border-radius: 4px;
+    background: transparent;
+    cursor: pointer;
+}
+
+.btn-confirm:hover {
+    background-color: #22c55e;
+    color: #000;
+}
+
+.btn-cancel {
+    padding: 4px 12px;
+    border: 1px solid #4b5563;
+    color: #9ca3af;
+    border-radius: 4px;
+    background: transparent;
+    cursor: pointer;
+}
+
+.btn-cancel:hover {
+    background-color: #4b5563;
+    color: #000;
+}
+
+.mobile-hint {
+    margin-top: 12px;
+    font-size: 0.75rem;
+    color: #4b5563;
+}
+
+/* Hide on large screens */
+@media (min-width: 1024px) {
+    .mobile-actions,
+    .mobile-hint {
+        display: none;
+    }
+}
+
+
+
+.opening-message {
+    color: #22c55e;
+}
+
+.opening-pid {
+    color: #6b7280;
+    font-size: 0.875rem;
+    margin-top: 4px;
+}
+
+
+
+@media (max-width: 640px) {
+    .terminal-panel {
+        height: 85vh;
+        width: calc(100% - 32px);
+        margin: 0 auto 24px auto; /* Margin from bottom and sides */
+        max-height: none;
+        border-radius: 12px; /* Rounded corners on all sides */
+    }
+
+    .terminal-body {
+        padding: 16px 14px;
+    }
+
+    .terminal-body > * {
+        max-width: 42ch;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .cmd-prompt {
+        font-size: 0.9rem;
+        opacity: 0.6;
+        margin-bottom: 12px;
+    }
+
+    .topic-title {
+        font-size: 1.4rem;
+    }
+
+    .topic-desc {
+        font-size: 1rem;
+        line-height: 1.65;
+    }
+
+    .resources-grid {
+        grid-template-columns: 1fr;
+    }
+}

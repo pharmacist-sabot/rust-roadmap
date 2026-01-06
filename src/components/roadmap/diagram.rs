@@ -82,7 +82,7 @@ pub fn RoadmapDiagram(props: DiagramData) -> impl IntoView {
                 id: topic.id,
                 title: topic.title,
                 level: topic.level,
-                topic_type: topic.topic_type, // ส่ง TopicType
+                topic_type: topic.topic_type, // Pass TopicType
                 x: tp.x,
                 y: tp.y,
                 width: props.config.node_width,
