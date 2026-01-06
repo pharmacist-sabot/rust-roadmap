@@ -5,12 +5,6 @@
  * for the entire application.
  */
 
-
-
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&family=JetBrains+Mono:wght@400;700&display=swap');
-
-
-
 body {
   font-family: "Inter", sans-serif;
   background-color: #050505;
@@ -19,8 +13,6 @@ body {
   padding: 0;
   overflow-x: hidden;
 }
-
-
 
 h1,
 h2,

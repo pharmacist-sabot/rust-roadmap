@@ -5,8 +5,6 @@
  * topic details and resources.
  */
 
-
-
 .terminal-overlay {
     position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;
@@ -23,8 +21,6 @@
     flex-grow: 1;
     width: 100%;
 }
-
-
 
 .terminal-panel {
     pointer-events: auto;
@@ -47,8 +43,6 @@
     from { transform: translateY(100%); opacity: 0; }
     to { transform: translateY(0); opacity: 1; }
 }
-
-
 
 .terminal-header {
     background-color: var(--terminal-header);
@@ -86,8 +80,6 @@
     color: #ccc;
 }
 
-
-
 .cmd-prompt {
     font-family: 'JetBrains Mono', monospace;
     margin-bottom: 20px;
@@ -98,8 +90,6 @@
 .cmd-user { color: #4ade80; }
 .cmd-path { color: #60a5fa; }
 .cmd-git  { color: #fbbf24; }
-
-
 
 .topic-title {
     font-family: 'JetBrains Mono', monospace;
@@ -119,8 +109,6 @@
     margin-bottom: 2rem;
     max-width: 800px;
 }
-
-
 
 .resources-grid {
     display: grid;
@@ -161,8 +149,6 @@
     margin-top: 2px;
 }
 
-
-
 .blink-cursor::after {
     content: "█";
     display: inline-block;
@@ -178,8 +164,6 @@
     50% { opacity: 0; }
 }
 
-
-
 .terminal-title {
     font-family: 'JetBrains Mono', monospace;
     font-size: 0.85rem;
@@ -189,8 +173,6 @@
 .terminal-spacer {
     width: 40px;
 }
-
-
 
 .topic-section {
     margin-bottom: 24px;
@@ -217,13 +199,9 @@
     line-height: 1.6;
 }
 
-
-
 .interactive-zone {
     min-height: 200px;
 }
-
-
 
 .resource-prompt {
     color: #4ade80;
@@ -273,15 +251,11 @@
 .badge-feed { color: #fb923c; }
 .badge-default { color: #6b7280; }
 
-
-
 .keyboard-hint {
     margin-top: 16px;
     font-size: 0.75rem;
     color: #4b5563;
 }
-
-
 
 .confirm-warning {
     color: #fcd34d;
@@ -303,8 +277,6 @@
     font-weight: 700;
     color: #fff;
 }
-
-
 
 .mobile-actions {
     margin-top: 16px;
@@ -355,8 +327,6 @@
     }
 }
 
-
-
 .opening-message {
     color: #22c55e;
 }
@@ -366,8 +336,6 @@
     font-size: 0.875rem;
     margin-top: 4px;
 }
-
-
 
 @media (max-width: 640px) {
     .terminal-panel {
@@ -388,22 +356,18 @@
         margin-right: auto;
     }
 
-    .cmd-prompt {
+    .topic-cmd {
         font-size: 0.9rem;
         opacity: 0.6;
         margin-bottom: 12px;
     }
 
-    .topic-title {
+    .topic-heading {
         font-size: 1.4rem;
     }
 
-    .topic-desc {
+    .topic-text {
         font-size: 1rem;
         line-height: 1.65;
-    }
-
-    .resources-grid {
-        grid-template-columns: 1fr;
     }
 }
