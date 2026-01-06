@@ -115,7 +115,7 @@ pub fn TopicDetail(content: TopicContent, on_close: Callback<()>) -> impl IntoVi
             ref=container_ref
         >
             // Backdrop
-            <div class="flex-grow w-full terminal-backdrop" on:click=move |_| on_close.call(())></div>
+            <div class="terminal-backdrop" on:click=move |_| on_close.call(())></div>
 
             // Terminal Panel
             <div class="terminal-panel" on:click=move |e| e.stop_propagation()>
@@ -127,56 +127,56 @@ pub fn TopicDetail(content: TopicContent, on_close: Callback<()>) -> impl IntoVi
                         <span class="term-btn term-max"></span>
                     </div>
                     <div class="terminal-title" id="terminal-title">"rust-roadmap"</div>
-                    <div class="w-10"></div>
+                    <div class="terminal-spacer"></div>
                 </div>
 
                 // Body
-                <div class="terminal-body font-mono">
+                <div class="terminal-body">
                     // Static Description (Always visible at top)
-                    <div class="mb-6 border-b border-gray-800 pb-4">
-                        <div class="cmd-prompt text-sm text-gray-500 mb-2">
+                    <div class="topic-section">
+                        <div class="topic-cmd">
                             "$ cat README.md"
                         </div>
-                        <h2 class="text-lg md:text-xl font-bold text-white mb-2">
+                        <h2 class="topic-heading">
                             {"# "}{content.title}
                         </h2>
-                        <p class="text-sm md:text-base text-gray-400 leading-relaxed">
+                        <p class="topic-text">
                             {content.description}
                         </p>
                     </div>
 
                     // Interactive Area
-                    <div class="interactive-zone min-h-[200px]">
+                    <div class="interactive-zone">
                         {move || match state.get() {
                             TerminalState::Browsing => view! {
                                 <div>
-                                    <div class="cmd-prompt text-green-400 mb-2">
+                                    <div class="resource-prompt">
                                         "ferris@rust:~/resources $ ls -l"
                                     </div>
-                                    <div class="flex flex-col gap-1">
+                                    <div class="resource-list">
                                         {content.resources.iter().enumerate().map(|(i, res)| {
                                             let is_selected = i == selected_idx.get();
                                             let cursor = if is_selected { ">" } else { " " };
-                                            let row_class = if is_selected { "bg-[#2d2d2d] text-white" } else { "text-gray-500" };
-                                            let badge_color = match res.badge {
-                                                BadgeKind::Official => "text-blue-400",
-                                                BadgeKind::OpenSource => "text-green-400",
-                                                BadgeKind::Article => "text-yellow-300",
-                                                BadgeKind::Video => "text-red-400",
-                                                BadgeKind::Feed => "text-orange-400",
-                                                _ => "text-gray-500",
+                                            let row_class = if is_selected { "resource-row selected" } else { "resource-row" };
+                                            let badge_class = match res.badge {
+                                                BadgeKind::Official => "resource-permission badge-official",
+                                                BadgeKind::OpenSource => "resource-permission badge-opensource",
+                                                BadgeKind::Article => "resource-permission badge-article",
+                                                BadgeKind::Video => "resource-permission badge-video",
+                                                BadgeKind::Feed => "resource-permission badge-feed",
+                                                _ => "resource-permission badge-default",
                                             };
 
                                             view! {
                                                 <div
-                                                    class=format!("flex items-center gap-3 px-2 py-1 cursor-pointer {}", row_class)
+                                                    class=row_class
                                                     on:click=move |_| {
                                                         set_selected_idx.set(i);
                                                         set_state.set(TerminalState::Confirming(i));
                                                     }
                                                 >
-                                                    <span class="text-orange-500 font-bold w-4">{cursor}</span>
-                                                    <span class=format!("text-xs w-24 {}", badge_color)>
+                                                    <span class="resource-cursor">{cursor}</span>
+                                                    <span class=badge_class>
                                                         {match res.badge {
                                                             BadgeKind::Official => "r--r--r--",     // Read-only
                                                             BadgeKind::OpenSource => "rwxr-xr-x",   // Executable
@@ -186,12 +186,12 @@ pub fn TopicDetail(content: TopicContent, on_close: Callback<()>) -> impl IntoVi
                                                             _ => "---------",
                                                         }}
                                                     </span>
-                                                    <span class="font-mono">{res.label}</span>
+                                                    <span class="resource-label">{res.label}</span>
                                                 </div>
                                             }
                                         }).collect_view()}
                                     </div>
-                                    <div class="mt-4 text-xs text-gray-600">
+                                    <div class="keyboard-hint">
                                         "[Use Arrow Keys/Vim to move, Enter to select]"
                                     </div>
                                 </div>
@@ -201,37 +201,37 @@ pub fn TopicDetail(content: TopicContent, on_close: Callback<()>) -> impl IntoVi
                                 let on_confirm = confirm_open.clone();
                                 view! {
                                 <div>
-                                    <div class="cmd-prompt text-green-400 mb-2">
+                                    <div class="resource-prompt">
                                         "ferris@rust:~/resources $ open \"" {content.resources[idx].label} "\""
                                     </div>
-                                    <div class="text-yellow-300 mb-2">
+                                    <div class="confirm-warning">
                                         "warning: you are about to open an external link."
                                     </div>
-                                    <div class="text-white">
-                                        "Url: " <span class="text-blue-400 underline break-all">{content.resources[idx].url}</span>
+                                    <div class="confirm-url">
+                                        "Url: " <span class="confirm-url-link">{content.resources[idx].url}</span>
                                     </div>
-                                    <div class="mt-4 font-bold text-white blink-cursor">
+                                    <div class="confirm-prompt blink-cursor">
                                         "Proceed? [Y/n] "
                                     </div>
 
                                     // Touch fallback (Mobile/Tablet only)
-                                    <div class="mt-4 flex gap-3 text-sm lg:hidden">
+                                    <div class="mobile-actions">
                                         <button
-                                            class="px-3 py-1 border border-green-500 text-green-400 rounded hover:bg-green-500 hover:text-black"
+                                            class="btn-confirm"
                                             on:click=move |_| on_confirm(idx)
                                         >
                                             "[Y] Yes"
                                         </button>
 
                                         <button
-                                            class="px-3 py-1 border border-gray-600 text-gray-400 rounded hover:bg-gray-600 hover:text-black"
+                                            class="btn-cancel"
                                             on:click=move |_| set_state.set(TerminalState::Browsing)
                                         >
                                             "[N] No"
                                         </button>
                                     </div>
 
-                                    <div class="mt-3 text-xs text-gray-600 lg:hidden">
+                                    <div class="mobile-hint">
                                         "(Keyboard: Y / N / Enter)"
                                     </div>
                                 </div>
@@ -240,10 +240,10 @@ pub fn TopicDetail(content: TopicContent, on_close: Callback<()>) -> impl IntoVi
 
                             TerminalState::Opening => view! {
                                 <div>
-                                    <div class="text-green-500">
-                                        "Opening default browser..."
+                                    <div class="opening-message">
+                                      "Opening default browser..."
                                     </div>
-                                    <div class="text-gray-500 text-sm mt-1">
+                                    <div class="opening-pid">
                                         "Child process spawned (PID 1337)"
                                     </div>
                                 </div>

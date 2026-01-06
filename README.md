@@ -66,7 +66,7 @@ src/
 - **Frontend Framework**: [Leptos](https://leptos.dev/) (Client-Side Rendering)
 - **Reactivity**: Fine-grained signals via `leptos_reactive`
 - **Bundler**: [Trunk](https://trunkrs.dev/) (WASM build tool)
-- **Styling**: Tailwind CSS (CDN) + Custom CSS Variables
+- **Styling**: Lightning CSS (via Trunk) + Modular CSS Architecture
 - **Rendering**: SVG (Scalable Vector Graphics)
 
 ---

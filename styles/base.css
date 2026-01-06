@@ -1,0 +1,22 @@
+/**
+ * base.css - Reset, Typography, Font Imports
+ * 
+ * This file contains foundational styles that establish the baseline
+ * for the entire application.
+ */
+
+body {
+  font-family: "Inter", sans-serif;
+  background-color: #050505;
+  color: var(--text-main);
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
+
+h1,
+h2,
+h3,
+.mono-font {
+  font-family: "JetBrains Mono", monospace;
+}
