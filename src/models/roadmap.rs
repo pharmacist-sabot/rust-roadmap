@@ -8,25 +8,19 @@ pub enum Level {
     Advanced,
 }
 
-/// Visual type of the topic box (Matches PDF Colors).
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+/// Visual type of the topic box
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
 pub enum TopicType {
-    /// Yellow box (Main Spine topics)
     Main,
-    /// Beige/Tan box (Sub topics)
+    #[default]
     Sub,
 }
 
-impl Default for TopicType {
-    fn default() -> Self {
-        Self::Sub
-    }
-}
-
 /// Explicit layout instruction relative to the central spine.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
 pub enum Placement {
     /// Aligned to the central axis.
+    #[default]
     Center,
     /// Branches out to the Left.
     Left,
@@ -34,13 +28,7 @@ pub enum Placement {
     Right,
 }
 
-impl Default for Placement {
-    fn default() -> Self {
-        Self::Center
-    }
-}
-
-/// A logical grouping of topics (The 23 Yellow boxes/phases).
+/// A logical grouping of topics.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Section {
     pub id: &'static str,
@@ -56,7 +44,7 @@ pub struct Topic {
     pub section_id: &'static str,
     pub level: Level,
     pub topic_type: TopicType,
-    pub placement: Placement, // <-- New explicit control
+    pub placement: Placement, 
 }
 
 /// A directed edge between topics.
