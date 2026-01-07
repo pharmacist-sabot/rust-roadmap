@@ -6,7 +6,7 @@ pub const SECTION_ID: &str = "intro_sec";
 
 pub fn get_topics() -> Vec<Topic> {
     vec![
-        // --- Main Spine (Yellow) ---
+        // --- Main Spine ---
         Topic {
             id: "intro",
             title: "Introduction",
@@ -15,7 +15,7 @@ pub fn get_topics() -> Vec<Topic> {
             topic_type: TopicType::Main,
             placement: Placement::Center,
         },
-        // --- Right Branch (Beige) ---
+        // --- Right Branch (Concepts) ---
         Topic {
             id: "what_is_rust",
             title: "What is Rust?",
@@ -32,34 +32,18 @@ pub fn get_topics() -> Vec<Topic> {
             topic_type: TopicType::Sub,
             placement: Placement::Right,
         },
+        // --- New Topics (Ecosystem & Community) ---
         Topic {
-            id: "env_setup",
-            title: "Environment Setup",
-            section_id: SECTION_ID,
-            level: Level::Beginner,
-            topic_type: TopicType::Sub,
-            placement: Placement::Right,
-        },
-        // --- Environment Setup Children ---
-        Topic {
-            id: "installing",
-            title: "Installing Rust and Cargo",
+            id: "ecosystem",
+            title: "Ecosystem & Use Cases",
             section_id: SECTION_ID,
             level: Level::Beginner,
             topic_type: TopicType::Sub,
             placement: Placement::Right,
         },
         Topic {
-            id: "ides",
-            title: "IDEs and Rust Toolchains",
-            section_id: SECTION_ID,
-            level: Level::Beginner,
-            topic_type: TopicType::Sub,
-            placement: Placement::Right,
-        },
-        Topic {
-            id: "repl",
-            title: "Rust REPL (Rust Playground)",
+            id: "community",
+            title: "Rust Community",
             section_id: SECTION_ID,
             level: Level::Beginner,
             topic_type: TopicType::Sub,
@@ -75,25 +59,17 @@ pub fn get_dependencies() -> Vec<Dependency> {
             to: "what_is_rust",
         },
         Dependency {
-            from: "intro", // Visual dotted line in PDF usually connects Spine -> Branch
+            from: "intro",
             to: "why_rust",
+        },
+        // All connected to intro (Fan-out)
+        Dependency {
+            from: "intro",
+            to: "ecosystem",
         },
         Dependency {
             from: "intro",
-            to: "env_setup",
-        },
-        // Env Setup Children
-        Dependency {
-            from: "env_setup",
-            to: "installing",
-        },
-        Dependency {
-            from: "env_setup",
-            to: "ides",
-        },
-        Dependency {
-            from: "env_setup",
-            to: "repl",
+            to: "community",
         },
     ]
 }
