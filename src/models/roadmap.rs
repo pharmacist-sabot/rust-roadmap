@@ -44,7 +44,7 @@ pub struct Topic {
     pub section_id: &'static str,
     pub level: Level,
     pub topic_type: TopicType,
-    pub placement: Placement, 
+    pub placement: Placement,
 }
 
 /// A directed edge between topics.
