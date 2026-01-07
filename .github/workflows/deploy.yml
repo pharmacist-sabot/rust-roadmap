@@ -1,14 +1,43 @@
-name: Deploy Rust Roadmap
+name: Rust Roadmap CI/CD
 
 on:
   push:
+    branches: [ "main" ]
+  pull_request:
     branches: [ "main" ]
 
 permissions:
   contents: write
 
 jobs:
-  build-and-deploy:
+  # 1. Check Lint & Test
+  check-and-test:
+    name: Check & Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+          components: rustfmt, clippy
+
+      - name: Check formatting
+        run: cargo fmt --all -- --check
+
+      - name: Run clippy
+        run: cargo clippy --all-targets -- -D warnings
+
+      - name: Run tests
+        run: cargo test --verbose
+
+  # 2. Build and Deploy 
+  deploy:
+    name: Build & Deploy
+    needs: check-and-test 
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -21,9 +50,10 @@ jobs:
 
       - name: Download Trunk
         uses: jetli/trunk-action@v0.5.0
+        with:
+          version: 'latest'
 
       - name: Build with Trunk
-        # แก้ public-url ให้ตรงกับชื่อ repo ของคุณ (อย่าลืม / ปิดท้าย)
         run: trunk build --release --public-url "/rust-roadmap/"
 
       - name: Deploy to GitHub Pages
