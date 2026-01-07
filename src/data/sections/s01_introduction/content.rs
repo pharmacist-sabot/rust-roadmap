@@ -65,6 +65,33 @@ pub fn get_content(id: &str) -> Option<TopicContent> {
                 },
             ],
         }),
+        "why_rust" => Some(TopicContent {
+            title: "Why use Rust?",
+            description: "Rust solves pain points present in many other languages, offering memory safety without garbage collection and explicit concurrency handling.",
+            resources: vec![
+                Resource {
+                    label: "Why Rust?",
+                    url: "https://www.rust-lang.org/",
+                    badge: BadgeKind::Official,
+                },
+            ],
+        }),
+        "ecosystem" => Some(TopicContent {
+            title: "Ecosystem & Use Cases",
+            description: "Rust is used in WebAssembly, Systems Programming, CLI tools, Embedded devices, and much more.",
+            resources: vec![],
+        }),
+        "community" => Some(TopicContent {
+            title: "Rust Community",
+            description: "The Rust community is known for being welcoming and helpful.",
+            resources: vec![
+                Resource {
+                    label: "Rust Community",
+                    url: "https://www.rust-lang.org/community",
+                    badge: BadgeKind::Official,
+                },
+            ],
+        }),
         _ => None,
     }
 }
