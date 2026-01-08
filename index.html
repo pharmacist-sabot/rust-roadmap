@@ -1,26 +1,32 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Rust Roadmap</title>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Rust Roadmap</title>
 
-        <!-- Google Fonts (Optimized Loading) -->
-        <link rel="preconnect" href="https://fonts.googleapis.com">
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <!-- Google Fonts (Optimized Loading) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&family=JetBrains+Mono:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
 
-        <!-- Trunk-managed CSS (Lightning CSS) -->
+    <!-- Trunk-managed CSS (Lightning CSS) -->
 
-        <link rel="stylesheet" href="/rust-roadmap/theme-902c7c6d0c576b4a.css" integrity="sha384-siF0wHW3W+YsFqg10oiE4KdOYJDmdy/OdSFEjNrLHNw78u1KV1WtzHDKUUVp2/SD"/>
-        <link rel="stylesheet" href="/rust-roadmap/base-3bd51dcf93d94ed8.css" integrity="sha384-nYVzp5otXommv/qD2AGumv5VLg6BRcv6P4PZnIb75gBsVQ9UXvdMuwVlB28hy4js"/>
-        <link rel="stylesheet" href="/rust-roadmap/terminal-46e0acc1331a4170.css" integrity="sha384-fIAFRmIugqF+lRyOyL6YOLPz/SwuyXE2BxGODlOydK72o5pCyQOocDcnts3Z0KP+"/>
-        <link rel="stylesheet" href="/rust-roadmap/roadmap-ee5017841c930cf9.css" integrity="sha384-a1OhgXaxwVhyiGCRRGvuVkCKhe79VC7IHFplH1bPAJaX7JT0dtmtRAzB9YvFwYYH"/>
+    <link rel="stylesheet" href="/rust-roadmap/theme-304f79a3041e69f2.css" integrity="sha384-yZN/0P0pB8crbhxnCvDR6TRhos+PXTRSDOegOrT31fK6yM36xkxryW5y1qVjIFwS"/>
+    <link rel="stylesheet" href="/rust-roadmap/base-4a67213d1aac0854.css" integrity="sha384-95FlfVLhikac/mn5cSwQ+XQCIOkOl6X1XAIo/DtUuecJ8DsyFaidMbJDI7gnZ+0A"/>
+    <link rel="stylesheet" href="/rust-roadmap/header-86f431dc8d2ebffa.css" integrity="sha384-VIQsSNnvsT8WwKE1NeN9s2BxyhuVXHH/KmJzR1NXTxHUxABbzSPxIXq9wssin7mR"/>
+    <link rel="stylesheet" href="/rust-roadmap/hero-8634c01a2531cb0f.css" integrity="sha384-H5rDURJtI4+z9mm1+LtuBnbqaGLGF+JQ9JCS7GIACJhfo3CNNqMFHT1CsCXP6DbQ"/>
+    <link rel="stylesheet" href="/rust-roadmap/footer-16edcaeff8a50cbb.css" integrity="sha384-u9gx8MoFCPOpOZ0yAbOC2m44b0OHeA2ueBKUez4JFP1Gd77+szTvEmdRLm41Acpz"/>
+    <link rel="stylesheet" href="/rust-roadmap/drawer-6384f032ddd2ad18.css" integrity="sha384-qyTPl48E6Sbr0TjG/aVoew73c3EyAYOjW11q8uu0fXZrfBs44N57VjtGzP/oRWUj"/>
+    <link rel="stylesheet" href="/rust-roadmap/roadmap-6da434afcedd7a1.css" integrity="sha384-XWOIsFl3TCpOxG9h4YJuvw0WdzaShpFncJFHONgsfefNmQxVwFEq9El1+7ozO3aF"/>
 
-        
+    
 <script type="module">
-import init, * as bindings from '/rust-roadmap/rust-roadmap-678d90f211647240.js';
-const wasm = await init({ module_or_path: '/rust-roadmap/rust-roadmap-678d90f211647240_bg.wasm' });
+import init, * as bindings from '/rust-roadmap/rust-roadmap-69b49b9559ec3bab.js';
+const wasm = await init({ module_or_path: '/rust-roadmap/rust-roadmap-69b49b9559ec3bab_bg.wasm' });
 
 
 window.wasmBindings = bindings;
@@ -29,6 +35,6 @@ window.wasmBindings = bindings;
 dispatchEvent(new CustomEvent("TrunkApplicationStarted", {detail: {wasm}}));
 
 </script>
-    <link rel="modulepreload" href="/rust-roadmap/rust-roadmap-678d90f211647240.js" crossorigin="anonymous" integrity="sha384-5E4i9TXtMJYvD14ms87Tf3R1COMILUnnp7i8e5cqxkGKUfjwVE+J1/C3MRE48zAN"><link rel="preload" href="/rust-roadmap/rust-roadmap-678d90f211647240_bg.wasm" crossorigin="anonymous" integrity="sha384-yYGzvah91H5Pxnw0NTD+oRo6JaqLpIaV3RK2fR+RwdZyz6RuLM2q5EsbxpI3mi/I" as="fetch" type="application/wasm"></head>
-    <body></body>
+  <link rel="modulepreload" href="/rust-roadmap/rust-roadmap-69b49b9559ec3bab.js" crossorigin="anonymous" integrity="sha384-Jl8l6oEQ9USZWH7mtPE+/p1eY5bxgwTohNBsQVqZlerQquEnUeYojnhxrULUUTqt"><link rel="preload" href="/rust-roadmap/rust-roadmap-69b49b9559ec3bab_bg.wasm" crossorigin="anonymous" integrity="sha384-+kAWmaqLYaEoIjMScpIyJidDGNiOakr57iVDl6qsmSP7QYYEWWxjef/FWG7abyh4" as="fetch" type="application/wasm"></head>
+  <body></body>
 </html>
