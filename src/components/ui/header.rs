@@ -6,6 +6,7 @@ pub fn Header(search_term: ReadSignal<String>, on_search: Callback<String>) -> i
     let (is_scrolled, set_is_scrolled) = create_signal(false);
 
     // Handle scroll for sticky header effect
+
     create_effect(move |_| {
         if let Some(window) = web_sys::window() {
             let closure = leptos::wasm_bindgen::closure::Closure::wrap(Box::new(move || {
@@ -18,7 +19,16 @@ pub fn Header(search_term: ReadSignal<String>, on_search: Callback<String>) -> i
 
             let _ =
                 window.add_event_listener_with_callback("scroll", closure.as_ref().unchecked_ref());
-            closure.forget();
+
+            on_cleanup(move || {
+                if let Some(window) = web_sys::window() {
+                    let _ = window.remove_event_listener_with_callback(
+                        "scroll",
+                        closure.as_ref().unchecked_ref(),
+                    );
+                }
+                // closure is dropped here automatically
+            });
         }
     });
 
