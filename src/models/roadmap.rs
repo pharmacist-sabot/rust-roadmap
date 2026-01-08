@@ -28,12 +28,20 @@ pub enum Placement {
     Right,
 }
 
+/// Layout strategy for the section's branches.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum SectionLayout {
+    List,
+    Grid { cols: usize },
+}
+
 /// A logical grouping of topics.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Section {
     pub id: &'static str,
     pub title: &'static str,
     pub order: u8,
+    pub layout: SectionLayout,
 }
 
 /// A single node in the roadmap.
@@ -45,6 +53,9 @@ pub struct Topic {
     pub level: Level,
     pub topic_type: TopicType,
     pub placement: Placement,
+    /// Row within the section for grid layout (0-indexed).
+    /// `None` means auto-assign based on array order (backward compatible).
+    pub row: Option<usize>,
 }
 
 /// A directed edge between topics.

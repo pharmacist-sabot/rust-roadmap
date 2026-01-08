@@ -14,6 +14,7 @@ pub fn get_topics() -> Vec<Topic> {
             level: Level::Beginner,
             topic_type: TopicType::Main,
             placement: Placement::Center,
+            row: None,
         },
         // --- Left Side (Syntax) ---
         Topic {
@@ -23,6 +24,7 @@ pub fn get_topics() -> Vec<Topic> {
             level: Level::Beginner,
             topic_type: TopicType::Sub, // Or distinct style if prefer
             placement: Placement::Left,
+            row: None,
         },
         Topic {
             id: "vars",
@@ -31,6 +33,7 @@ pub fn get_topics() -> Vec<Topic> {
             level: Level::Beginner,
             topic_type: TopicType::Sub,
             placement: Placement::Left,
+            row: None,
         },
         Topic {
             id: "control_flow",
@@ -39,23 +42,24 @@ pub fn get_topics() -> Vec<Topic> {
             level: Level::Beginner,
             topic_type: TopicType::Sub,
             placement: Placement::Left,
+            row: None,
         },
     ]
 }
 
 pub fn get_dependencies() -> Vec<Dependency> {
     vec![
-        // Spine -> Left
+        // Spine -> Left (All direct children)
         Dependency {
             from: "basics",
             to: "syntax_group",
         },
         Dependency {
-            from: "syntax_group",
+            from: "basics",
             to: "vars",
         },
         Dependency {
-            from: "vars",
+            from: "basics",
             to: "control_flow",
         },
     ]

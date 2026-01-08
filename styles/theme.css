@@ -1,20 +1,120 @@
 /**
- * theme.css - Colors, Spacing, Shadows
+ * theme.css - Premium Dark Theme Design Tokens
  * 
- * Global CSS custom properties for theming.
- * Dark-first UI with terminal/editor inspiration.
+ * Comprehensive design system for the Rust Roadmap application.
+ * Inspired by modern dark UIs with vibrant orange/red accents.
  */
 
 :root {
-    /* Brand Colors */
-    --rust-orange: #FF4400;
-    --rust-dark: #0b0b0b;
-    
-    /* Terminal Theme */
-    --terminal-bg: #1e1e1e;
-    --terminal-header: #2d2d2d;
-    
-    /* Text Colors */
-    --text-main: #e5e5e5;
-    --text-dim: #a3a3a3;
+  /* === Background Colors === */
+  --bg-primary: #050505;
+  --bg-secondary: #0f172a;
+  --bg-tertiary: #1e293b;
+  --bg-elevated: #0d1117;
+  --bg-card: #1a1a1a;
+  --bg-card-hover: #222222;
+
+  /* === Text Colors === */
+  --text-primary: #ffffff;
+  --text-secondary: #e2e8f0;
+  --text-tertiary: #cbd5e1;
+  --text-muted: #64748b;
+  --text-dim: #475569;
+
+  /* === Brand Colors - Orange Scale === */
+  --orange-300: #fdba74;
+  --orange-400: #fb923c;
+  --orange-500: #f97316;
+  --orange-600: #ea580c;
+  --orange-700: #c2410c;
+
+  /* === Brand Colors - Red Scale === */
+  --red-400: #f87171;
+  --red-500: #ef4444;
+  --red-600: #dc2626;
+
+  /* === Slate Scale === */
+  --slate-50: #f8fafc;
+  --slate-100: #f1f5f9;
+  --slate-200: #e2e8f0;
+  --slate-300: #cbd5e1;
+  --slate-400: #94a3b8;
+  --slate-500: #64748b;
+  --slate-600: #475569;
+  --slate-700: #334155;
+  --slate-800: #1e293b;
+  --slate-900: #0f172a;
+
+  /* === Semantic Colors === */
+  --border-primary: #334155;
+  --border-secondary: #1e293b;
+  --border-accent: #ea580c;
+  --border-muted: #475569;
+
+  /* === Gradients === */
+  --gradient-hero: linear-gradient(to right, var(--orange-500), var(--red-500));
+  --gradient-glow-orange: radial-gradient(
+    circle at center,
+    rgba(234, 88, 12, 0.15),
+    transparent 70%
+  );
+  --gradient-glow-red: radial-gradient(
+    circle at center,
+    rgba(239, 68, 68, 0.1),
+    transparent 70%
+  );
+
+  /* === Shadows === */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  --shadow-glow-orange: 0 0 15px rgba(234, 88, 12, 0.5);
+  --shadow-glow-orange-intense: 0 0 20px rgba(234, 88, 12, 0.8);
+
+  /* === Spacing Scale === */
+  --space-1: 0.25rem; /* 4px */
+  --space-2: 0.5rem; /* 8px */
+  --space-3: 0.75rem; /* 12px */
+  --space-4: 1rem; /* 16px */
+  --space-5: 1.25rem; /* 20px */
+  --space-6: 1.5rem; /* 24px */
+  --space-8: 2rem; /* 32px */
+  --space-10: 2.5rem; /* 40px */
+  --space-12: 3rem; /* 48px */
+  --space-16: 4rem; /* 64px */
+  --space-20: 5rem; /* 80px */
+  --space-24: 6rem; /* 96px */
+
+  /* === Border Radius === */
+  --radius-sm: 0.25rem; /* 4px */
+  --radius-md: 0.5rem; /* 8px */
+  --radius-lg: 0.75rem; /* 12px */
+  --radius-xl: 1rem; /* 16px */
+  --radius-full: 9999px;
+
+  /* === Z-Index Layers === */
+  --z-background: -1;
+  --z-base: 0;
+  --z-elevated: 10;
+  --z-dropdown: 20;
+  --z-sticky: 30;
+  --z-header: 40;
+  --z-overlay: 50;
+  --z-drawer: 50;
+  --z-modal: 60;
+  --z-toast: 70;
+
+  /* === Animation Timing === */
+  --transition-fast: 150ms;
+  --transition-base: 200ms;
+  --transition-slow: 300ms;
+  --transition-slower: 400ms;
+
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
 }

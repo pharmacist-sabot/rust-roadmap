@@ -12,6 +12,7 @@ pub fn get_topics() -> Vec<Topic> {
         level: Level::Intermediate,
         topic_type: TopicType::Main,
         placement: Placement::Center,
+        row: None,
     }]
 }
 

@@ -1,5 +1,8 @@
 use crate::components::roadmap::detail_view::TopicDetail;
 use crate::components::roadmap::diagram::{DiagramData, RoadmapDiagram};
+use crate::components::ui::footer::Footer;
+use crate::components::ui::header::Header;
+use crate::components::ui::hero::Hero;
 use crate::data::get_topic_content;
 use crate::data::{SECTIONS, get_all_dependencies, get_all_topics};
 use crate::layout::tree::{LayoutConfig, compute_layout};
@@ -9,29 +12,30 @@ use leptos::*;
 pub fn RoadmapPage() -> impl IntoView {
     let config = LayoutConfig::default();
 
-    // Data Loading (Now aggregated from modules)
-    // Note: Since these return Vec, we leak them to get &'static slice lifetime
-    // or adjust the DiagramData to accept Vec/Cow.
-    // For simplicity in this constraints, we will store them in local Signals or just Box::leak for the demo.
-    // **Proper Rust Way:** Change DiagramData to accept Vec or generic slice.
-    // But to minimize diffs, I will use a simple block here.
-
     let topics = get_all_topics();
     let dependencies = get_all_dependencies();
 
-    // Box::leak to match the existing &'static lifetime requirement in components
-    // (In a real app, you'd use Rc<Vec<>> or similar)
     let static_topics = Box::leak(topics.into_boxed_slice());
     let static_deps = Box::leak(dependencies.into_boxed_slice());
 
     let layout = compute_layout(SECTIONS, static_topics, static_deps, &config);
 
+    // Search state
+    let (search_term, set_search_term) = create_signal(String::new());
+
     // State for selected topic ID
     let (selected_topic_id, set_selected_topic_id) = create_signal(None::<&'static str>);
 
-    // Derived signal for content - this ensures we always get fresh content or None
+    // Derived signal for content
     let selected_content =
         create_memo(move |_| selected_topic_id.get().and_then(get_topic_content));
+
+    // Check if drawer is open
+    let is_drawer_open = create_memo(move |_| selected_topic_id.get().is_some());
+
+    let handle_search = Callback::new(move |term: String| {
+        set_search_term.set(term);
+    });
 
     let handle_topic_click = Callback::new(move |id: &'static str| {
         set_selected_topic_id.set(Some(id));
@@ -52,19 +56,44 @@ pub fn RoadmapPage() -> impl IntoView {
 
     view! {
         <div class="roadmap-page">
-            <header class="roadmap-header">
-                <h1>"Rust Developer Roadmap"</h1>
-                <p class="roadmap-subtitle">"Step by step guide to becoming a Rust developer"</p>
-            </header>
-            <main class="roadmap-content">
-                <RoadmapDiagram props=diagram_props />
+            // Background Decorations
+            <div class="bg-decorations">
+                <div class="glow-orb"></div>
+                <div class="noise-overlay"></div>
+            </div>
+
+            // Header
+            <Header search_term=search_term on_search=handle_search />
+
+            // Main Content
+            <main class="main-content">
+                // Hero Section
+                <Hero />
+
+                // Roadmap Container
+                <div class="roadmap-container">
+                    <RoadmapDiagram props=diagram_props />
+
+                </div>
             </main>
 
-            <Show when=move || selected_content.get().is_some()>
-                <TopicDetail
-                    content=selected_content.get().unwrap()
-                    on_close=handle_close_detail
-                />
+            // Footer
+            <Footer />
+
+            // Drawer (with backdrop)
+            <Show when=move || is_drawer_open.get()>
+                <div class="drawer-backdrop" on:click=move |_| handle_close_detail.call(())></div>
+                {move || {
+                    selected_content.get().map(|content| {
+                        view! {
+                            <TopicDetail
+                                content=content
+                                on_close=handle_close_detail
+                                is_open=is_drawer_open.get()
+                            />
+                        }
+                    })
+                }}
             </Show>
         </div>
     }

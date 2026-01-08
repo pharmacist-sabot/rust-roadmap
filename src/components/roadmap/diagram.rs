@@ -9,26 +9,6 @@ use crate::layout::tree::{
 use crate::models::roadmap::{Dependency, Section, Topic};
 use leptos::*;
 
-#[derive(Clone, Debug, PartialEq)]
-pub struct SectionHeaderData {
-    pub id: &'static str,
-    pub title: &'static str,
-    pub x: f64,
-    pub y: f64,
-    pub width: f64, // Added width for centering
-}
-
-#[component]
-fn SectionHeader(props: SectionHeaderData) -> impl IntoView {
-    // Center text in the section column
-    let center_x = props.x + props.width / 2.0;
-    view! {
-        <text x=center_x y=props.y class="section-header" data-section-id=props.id>
-            {props.title}
-        </text>
-    }
-}
-
 #[derive(Clone)]
 pub struct DiagramData {
     pub sections: &'static [Section],
@@ -54,24 +34,7 @@ pub fn RoadmapDiagram(props: DiagramData) -> impl IntoView {
         props.layout.total_width, props.layout.total_height
     );
 
-    let section_headers: Vec<_> = props
-        .layout
-        .sections
-        .iter()
-        .filter_map(|sp| {
-            props
-                .sections
-                .iter()
-                .find(|s| s.id == sp.section_id)
-                .map(|s| SectionHeaderData {
-                    id: s.id,
-                    title: s.title,
-                    x: sp.x,
-                    y: sp.y,
-                    width: sp.width,
-                })
-        })
-        .collect();
+    // Section headers calculation removed as requested
 
     let node_props: Vec<_> = props
         .layout
@@ -80,13 +43,13 @@ pub fn RoadmapDiagram(props: DiagramData) -> impl IntoView {
         .filter_map(|tp| {
             find_topic(props.topics, tp.topic_id).map(|topic| NodeData {
                 id: topic.id,
-                title: topic.title,
-                level: topic.level,
-                topic_type: topic.topic_type, // Pass TopicType
                 x: tp.x,
                 y: tp.y,
-                width: props.config.node_width,
+                width: tp.width,
                 height: props.config.node_height,
+                title: topic.title, // Correct field name
+                level: topic.level, // Restore level
+                topic_type: topic.topic_type,
                 on_click: props.on_topic_click,
             })
         })
@@ -115,6 +78,24 @@ pub fn RoadmapDiagram(props: DiagramData) -> impl IntoView {
                 // Center → Left: exit from left edge, enter from right edge
                 (
                     crate::models::roadmap::Placement::Center,
+                    crate::models::roadmap::Placement::Left,
+                ) => {
+                    let (fx, fy) = topic_left_edge(from_pos, &props.config);
+                    let (tx, ty) = topic_right_edge(to_pos, &props.config);
+                    (fx, fy, tx, ty)
+                }
+                // Right → Right: horizontal chain (exit right, enter left)
+                (
+                    crate::models::roadmap::Placement::Right,
+                    crate::models::roadmap::Placement::Right,
+                ) => {
+                    let (fx, fy) = topic_right_edge(from_pos, &props.config);
+                    let (tx, ty) = topic_left_edge(to_pos, &props.config);
+                    (fx, fy, tx, ty)
+                }
+                // Left → Left: horizontal chain (exit left, enter right)
+                (
+                    crate::models::roadmap::Placement::Left,
                     crate::models::roadmap::Placement::Left,
                 ) => {
                     let (fx, fy) = topic_left_edge(from_pos, &props.config);
@@ -151,10 +132,9 @@ pub fn RoadmapDiagram(props: DiagramData) -> impl IntoView {
             <g class="edges-layer">
                 {edge_props.into_iter().map(|ep| view! { <RoadmapEdge props=ep /> }).collect_view()}
             </g>
-            <g class="sections-layer">
-                {section_headers.into_iter().map(|sh| view! { <SectionHeader props=sh /> }).collect_view()}
-            </g>
+            // Section headers removed as requested
             <g class="nodes-layer">
+
                 {node_props.into_iter().map(|np| view! { <RoadmapNode props=np /> }).collect_view()}
             </g>
         </svg>

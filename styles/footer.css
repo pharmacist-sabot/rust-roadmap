@@ -1,0 +1,44 @@
+/**
+ * footer.css - Footer Component Styles
+ */
+
+.footer {
+    border-top: 1px solid var(--slate-900);
+    padding: var(--space-12) 0;
+    background-color: #020202;
+}
+
+.footer__container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-6);
+}
+
+.footer__copyright {
+    color: var(--slate-500);
+    font-size: 0.875rem;
+}
+
+.footer__links {
+    display: flex;
+    gap: var(--space-6);
+}
+
+.footer__link {
+    color: var(--slate-600);
+    transition: color var(--transition-base);
+    display: flex;
+    align-items: center;
+}
+
+.footer__link:hover {
+    color: var(--orange-500);
+}
+
+@media (min-width: 768px) {
+    .footer__container {
+        flex-direction: row;
+    }
+}
