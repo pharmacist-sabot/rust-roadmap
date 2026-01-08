@@ -14,8 +14,8 @@ pub fn get_topics() -> Vec<Topic> {
             level: Level::Beginner,
             topic_type: TopicType::Main,
             placement: Placement::Center,
+            row: None,
         },
-        // --- Right Branch (Concepts) ---
         Topic {
             id: "what_is_rust",
             title: "What is Rust?",
@@ -23,6 +23,7 @@ pub fn get_topics() -> Vec<Topic> {
             level: Level::Beginner,
             topic_type: TopicType::Sub,
             placement: Placement::Right,
+            row: None,
         },
         Topic {
             id: "why_rust",
@@ -31,8 +32,8 @@ pub fn get_topics() -> Vec<Topic> {
             level: Level::Beginner,
             topic_type: TopicType::Sub,
             placement: Placement::Right,
+            row: None,
         },
-        // --- New Topics (Ecosystem & Community) ---
         Topic {
             id: "ecosystem",
             title: "Ecosystem & Use Cases",
@@ -40,6 +41,7 @@ pub fn get_topics() -> Vec<Topic> {
             level: Level::Beginner,
             topic_type: TopicType::Sub,
             placement: Placement::Right,
+            row: None,
         },
         Topic {
             id: "community",
@@ -48,6 +50,7 @@ pub fn get_topics() -> Vec<Topic> {
             level: Level::Beginner,
             topic_type: TopicType::Sub,
             placement: Placement::Right,
+            row: None,
         },
     ]
 }
@@ -62,7 +65,6 @@ pub fn get_dependencies() -> Vec<Dependency> {
             from: "intro",
             to: "why_rust",
         },
-        // All connected to intro (Fan-out)
         Dependency {
             from: "intro",
             to: "ecosystem",

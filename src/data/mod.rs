@@ -3,7 +3,7 @@
 pub mod sections;
 
 use self::sections::*;
-use crate::models::roadmap::{Dependency, Section, Topic, TopicContent};
+use crate::models::roadmap::{Dependency, Section, SectionLayout, Topic, TopicContent};
 
 /// Defines the order of sections (The Spine).
 pub const SECTIONS: &[Section] = &[
@@ -11,136 +11,163 @@ pub const SECTIONS: &[Section] = &[
         id: s01_introduction::SECTION_ID,
         title: "",
         order: 1,
+        layout: SectionLayout::Grid { cols: 2 },
     },
     Section {
         id: s02_setup::SECTION_ID,
         title: "",
         order: 2,
+        layout: SectionLayout::List,
     },
     Section {
         id: s03_language_basics::SECTION_ID,
         title: "",
         order: 3,
+        layout: SectionLayout::List,
     },
     Section {
         id: s04_project_structure::SECTION_ID,
         title: "",
         order: 4,
+        layout: SectionLayout::List,
     },
     Section {
         id: s05_advanced_types_traits::SECTION_ID,
         title: "",
         order: 5,
+        layout: SectionLayout::List,
     },
     Section {
         id: s06_memory_lifetimes::SECTION_ID,
         title: "",
         order: 6,
+        layout: SectionLayout::List,
     },
     Section {
         id: s07_error_handling_safety::SECTION_ID,
         title: "",
         order: 7,
+        layout: SectionLayout::List,
     },
     Section {
         id: s08_testing_tdd::SECTION_ID,
         title: "",
         order: 8,
+        layout: SectionLayout::List,
     },
     Section {
         id: s09_concurrency_parallelism::SECTION_ID,
         title: "",
         order: 9,
+        layout: SectionLayout::List,
     },
     Section {
         id: s10_asynchronous_rust::SECTION_ID,
         title: "",
         order: 10,
+        layout: SectionLayout::List,
     },
     Section {
         id: s11_macros_metaprogramming::SECTION_ID,
         title: "",
         order: 11,
+        layout: SectionLayout::List,
     },
     Section {
         id: s12_serialization_data::SECTION_ID,
         title: "",
         order: 12,
+        layout: SectionLayout::List,
     },
     Section {
         id: s13_networking_io::SECTION_ID,
         title: "",
         order: 13,
+        layout: SectionLayout::List,
     },
     Section {
         id: s14_databases_orm::SECTION_ID,
         title: "",
         order: 14,
+        layout: SectionLayout::List,
     },
     Section {
         id: s15_documentation_docs::SECTION_ID,
         title: "",
         order: 15,
+        layout: SectionLayout::List,
     },
     Section {
         id: s16_debugging_tools::SECTION_ID,
         title: "",
         order: 16,
+        layout: SectionLayout::List,
     },
     Section {
         id: s17_performance_optimization::SECTION_ID,
         title: "",
         order: 17,
+        layout: SectionLayout::List,
     },
     Section {
         id: s18_cli_utilities::SECTION_ID,
         title: "",
         order: 18,
+        layout: SectionLayout::List,
     },
     Section {
         id: s19_web_applications::SECTION_ID,
         title: "",
         order: 19,
+        layout: SectionLayout::List,
     },
     Section {
         id: s20_webassembly_wasm::SECTION_ID,
         title: "",
         order: 20,
+        layout: SectionLayout::List,
     },
     Section {
         id: s21_gui_desktop::SECTION_ID,
         title: "",
         order: 21,
+        layout: SectionLayout::List,
     },
     Section {
         id: s22_embedded_systems::SECTION_ID,
         title: "",
         order: 22,
+        layout: SectionLayout::List,
     },
     Section {
         id: s23_game_dev_graphics::SECTION_ID,
         title: "",
         order: 23,
+        layout: SectionLayout::List,
     },
     Section {
         id: s24_cryptography_security::SECTION_ID,
         title: "",
         order: 24,
+        layout: SectionLayout::List,
     },
     Section {
         id: s25_unsafe_rust::SECTION_ID,
         title: "",
         order: 25,
+        layout: SectionLayout::List,
     },
     Section {
         id: s26_ffi_interop::SECTION_ID,
         title: "",
         order: 26,
+        layout: SectionLayout::List,
     },
     Section {
         id: s27_package_management_deepdive::SECTION_ID,
         title: "",
         order: 27,
+        layout: SectionLayout::List,
     },
 ];
 

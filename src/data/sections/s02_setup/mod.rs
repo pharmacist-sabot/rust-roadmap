@@ -14,6 +14,7 @@ pub fn get_topics() -> Vec<Topic> {
             level: Level::Beginner,
             topic_type: TopicType::Main,
             placement: Placement::Center,
+            row: None,
         },
         // --- Branches ---
         Topic {
@@ -23,6 +24,7 @@ pub fn get_topics() -> Vec<Topic> {
             level: Level::Beginner,
             topic_type: TopicType::Sub,
             placement: Placement::Left,
+            row: None,
         },
         Topic {
             id: "cargo_basics",
@@ -31,6 +33,7 @@ pub fn get_topics() -> Vec<Topic> {
             level: Level::Beginner,
             topic_type: TopicType::Sub,
             placement: Placement::Right,
+            row: None,
         },
     ]
 }
