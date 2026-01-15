@@ -1,8 +1,12 @@
 /**
  * header.css - Header Component Styles
- * 
+ *
  * Sticky header with search and branding.
  */
+
+/* -----------------------------------------------------------------------------
+ * Header Base
+ * -------------------------------------------------------------------------- */
 
 .header {
     position: fixed;
@@ -28,7 +32,10 @@
     justify-content: space-between;
 }
 
-/* Brand Section */
+/* -----------------------------------------------------------------------------
+ * Brand Section
+ * -------------------------------------------------------------------------- */
+
 .header__brand {
     display: flex;
     align-items: center;
@@ -67,7 +74,10 @@
     font-weight: 300;
 }
 
-/* Actions Section */
+/* -----------------------------------------------------------------------------
+ * Actions Section
+ * -------------------------------------------------------------------------- */
+
 .header__actions {
     display: flex;
     align-items: center;
@@ -126,7 +136,10 @@
     color: var(--text-primary);
 }
 
-/* Mobile Responsive */
+/* -----------------------------------------------------------------------------
+ * Responsive
+ * -------------------------------------------------------------------------- */
+
 @media (max-width: 640px) {
     .header__title {
         display: none;

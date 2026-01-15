@@ -30,8 +30,8 @@ fn find_topic_position<'a>(positions: &'a [TopicPosition], id: &str) -> Option<&
 #[component]
 pub fn RoadmapDiagram(props: DiagramData) -> impl IntoView {
     let viewbox = format!(
-        "0 0 {} {}",
-        props.layout.total_width, props.layout.total_height
+        "{} 0 {} {}",
+        props.layout.min_x, props.layout.total_width, props.layout.total_height
     );
 
     // Section headers calculation removed as requested

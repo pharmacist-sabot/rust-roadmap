@@ -56,6 +56,7 @@ fn estimate_width(title: &str) -> f64 {
 pub struct LayoutResult {
     pub sections: Vec<SectionPosition>,
     pub topics: Vec<TopicPosition>,
+    pub min_x: f64,
     pub total_width: f64,
     pub total_height: f64,
 }
@@ -210,10 +211,34 @@ pub fn compute_layout(
         current_y = max_y_in_section + config.section_spacing;
     }
 
+    // Calculate actual bounds from topic positions to avoid clipping
+    let max_x = topic_positions
+        .iter()
+        .map(|p| p.x + p.width)
+        .fold(0.0_f64, |a, b| a.max(b));
+
+    let min_x = topic_positions
+        .iter()
+        .map(|p| p.x)
+        .fold(0.0_f64, |a, b| a.min(b));
+
+    // Calculate width accounting for both left and right overflow
+    let symmetric_width = config.center_x * 2.0;
+    let right_overflow_width = max_x + 50.0;
+    let left_overflow_width = if min_x < 0.0 {
+        (-min_x) + symmetric_width + 50.0
+    } else {
+        symmetric_width
+    };
+    let calculated_width = symmetric_width
+        .max(right_overflow_width)
+        .max(left_overflow_width);
+
     LayoutResult {
         sections: section_positions,
         topics: topic_positions,
-        total_width: config.center_x * 2.0, // Symmetric canvas
+        min_x: min_x.min(0.0), // Ensure min_x is 0 or negative
+        total_width: calculated_width,
         total_height: current_y + 100.0,
     }
 }
