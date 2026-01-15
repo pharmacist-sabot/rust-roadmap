@@ -91,18 +91,30 @@ pub fn TopicDetail(content: TopicContent, on_close: Callback<()>, is_open: bool)
                                 let badge_class = match res.badge {
                                     BadgeKind::Official => "drawer__resource-badge badge--official",
                                     BadgeKind::OpenSource => "drawer__resource-badge badge--opensource",
+                                    BadgeKind::Crate => "drawer__resource-badge badge--crate",
                                     BadgeKind::Article => "drawer__resource-badge badge--article",
+                                    BadgeKind::Book => "drawer__resource-badge badge--book",
                                     BadgeKind::Video => "drawer__resource-badge badge--video",
-                                    BadgeKind::Feed => "drawer__resource-badge badge--feed",
+                                    BadgeKind::Course => "drawer__resource-badge badge--course",
+                                    BadgeKind::Interactive => "drawer__resource-badge badge--interactive",
+                                    BadgeKind::Podcast => "drawer__resource-badge badge--podcast",
+                                    BadgeKind::Newsletter => "drawer__resource-badge badge--newsletter",
+                                    BadgeKind::Community => "drawer__resource-badge badge--community",
                                     _ => "drawer__resource-badge badge--default",
                                 };
 
                                 let badge_text = match res.badge {
                                     BadgeKind::Official => "Official",
-                                    BadgeKind::OpenSource => "OpenSource",
+                                    BadgeKind::OpenSource => "Open Source",
+                                    BadgeKind::Crate => "Crate",
                                     BadgeKind::Article => "Article",
+                                    BadgeKind::Book => "Book",
                                     BadgeKind::Video => "Video",
-                                    BadgeKind::Feed => "Feed",
+                                    BadgeKind::Course => "Course",
+                                    BadgeKind::Interactive => "Interactive",
+                                    BadgeKind::Podcast => "Podcast",
+                                    BadgeKind::Newsletter => "Newsletter",
+                                    BadgeKind::Community => "Community",
                                     BadgeKind::Other(s) => s,
                                 };
 

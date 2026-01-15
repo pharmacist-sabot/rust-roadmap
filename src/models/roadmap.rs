@@ -68,11 +68,29 @@ pub struct Dependency {
 /// Type of resource badge.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum BadgeKind {
+    /// Official documentation (e.g., The Rust Book, std docs).
     Official,
-    OpenSource,
+    /// Source code repository (e.g., GitHub, GitLab).
+    OpenSource, // หรืออาจจะใช้คำว่า Repository
+    /// Specific crate on crates.io or docs.rs.
+    Crate,
+    /// A standalone blog post or text tutorial.
     Article,
+    /// A full book (digital or physical).
+    Book,
+    /// A standalone video or conference talk.
     Video,
-    Feed,
+    /// A structured course (series of videos/lessons).
+    Course,
+    /// Interactive learning, coding challenges (e.g., Rustlings).
+    Interactive,
+    /// Audio content.
+    Podcast,
+    /// Newsletters (e.g., This Week in Rust).
+    Newsletter,
+    /// Community discussions (e.g., Reddit, Discord, URL).
+    Community,
+    /// Fallback for anything else.
     Other(&'static str),
 }
 

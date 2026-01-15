@@ -61,7 +61,7 @@ pub fn get_content(id: &str) -> Option<TopicContent> {
                 Resource {
                     label: "Explore top posts about Rust",
                     url: "https://www.reddit.com/r/rust/top/?t=all",
-                    badge: BadgeKind::Feed,
+                    badge: BadgeKind::Community,
                 },
             ],
         }),
