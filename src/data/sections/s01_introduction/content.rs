@@ -79,7 +79,33 @@ pub fn get_content(id: &str) -> Option<TopicContent> {
         "ecosystem" => Some(TopicContent {
             title: "Ecosystem & Use Cases",
             description: "Rust is used in WebAssembly, Systems Programming, CLI tools, Embedded devices, and much more.",
-            resources: vec![],
+            resources: vec![
+                Resource {
+                    label: "Is Rust the Future of Programming?",
+                    url: "https://blog.jetbrains.com/rust/2025/05/13/is-rust-the-future-of-programming/",
+                    badge: BadgeKind::Article,
+                },
+                Resource {
+                    label: "Seeking Rust Use Cases",
+                    url: "https://www.reddit.com/r/rust/comments/1ckgj4t/seeking_rust_use_cases/",
+                    badge: BadgeKind::Community,
+                },
+                Resource {
+                    label: "Rust Programming Language Adoption and Usage Trends",
+                    url: "https://yalantis.com/blog/rust-market-overview/",
+                    badge: BadgeKind::Article,
+                },
+                Resource {
+                    label: "Practical uses of Rust",
+                    url: "https://users.rust-lang.org/t/practical-uses-of-rust/12734",
+                    badge: BadgeKind::Community,
+                },
+                Resource {
+                    label: "Top 12 Real-World Business Use Cases for Rust",
+                    url: "https://serokell.io/blog/best-rust-in-use-cases",
+                    badge: BadgeKind::Article,
+                },
+            ],
         }),
         "community" => Some(TopicContent {
             title: "Rust Community",
