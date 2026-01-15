@@ -80,24 +80,24 @@ pub fn RoadmapPage() -> impl IntoView {
             // Footer
             <Footer />
 
-            // Drawer (with backdrop)
-            <Show when=move || is_drawer_open.get()>
-                <div
-                    class=move || if is_drawer_open.get() { "drawer-backdrop drawer-backdrop--visible" } else { "drawer-backdrop" }
-                    on:click=move |_| handle_close_detail.call(())
-                ></div>
-                {move || {
-                    selected_content.get().map(|content| {
-                        view! {
-                            <TopicDetail
-                                content=content
-                                on_close=handle_close_detail
-                                is_open=is_drawer_open.get()
-                            />
-                        }
-                    })
-                }}
-            </Show>
+            // Drawer Backdrop (always mounted for fade-out animation)
+            <div
+                class=move || if is_drawer_open.get() { "drawer-backdrop drawer-backdrop--visible" } else { "drawer-backdrop" }
+                on:click=move |_| handle_close_detail.call(())
+            ></div>
+
+            // Drawer Content
+            {move || {
+                selected_content.get().map(|content| {
+                    view! {
+                        <TopicDetail
+                            content=content
+                            on_close=handle_close_detail
+                            is_open=is_drawer_open.get()
+                        />
+                    }
+                })
+            }}
         </div>
     }
 }
