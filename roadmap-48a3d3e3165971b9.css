@@ -1,16 +1,23 @@
 /**
  * roadmap.css - Roadmap Diagram & Layout
- * 
+ *
  * Styles for the main roadmap visualization including
  * the SVG nodes, connecting edges, and section headers.
  */
+
+/* -----------------------------------------------------------------------------
+ * Page Layout
+ * -------------------------------------------------------------------------- */
 
 .roadmap-page {
     position: relative;
     min-height: 100vh;
 }
 
-/* Background Decorations */
+/* -----------------------------------------------------------------------------
+ * Background Decorations
+ * -------------------------------------------------------------------------- */
+
 .bg-decorations {
     position: fixed;
     inset: 0;
@@ -41,7 +48,10 @@
     background-image: url('data:image/svg+xml;utf8,<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><filter id="noiseFilter"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="4" stitchTiles="stitch"/></filter><rect width="100%" height="100%" filter="url(%23noiseFilter)"/></svg>');
 }
 
-/* Main Content */
+/* -----------------------------------------------------------------------------
+ * Main Content
+ * -------------------------------------------------------------------------- */
+
 .main-content {
     position: relative;
     z-index: var(--z-base);
@@ -50,13 +60,16 @@
 }
 
 .roadmap-container {
-    max-width: 120rem; /* Increased from 80rem to fit wider layout */
+    max-width: 120rem;
     margin: 0 auto;
     padding: 0 var(--space-4);
-    overflow-x: auto; /* Allow scrolling if content overflows */
+    overflow-x: auto;
 }
 
-/* Roadmap Header */
+/* -----------------------------------------------------------------------------
+ * Roadmap Header
+ * -------------------------------------------------------------------------- */
+
 .roadmap-header {
     text-align: center;
     margin-bottom: var(--space-10);
@@ -77,7 +90,10 @@
     margin: 0;
 }
 
-/* SVG Diagram */
+/* -----------------------------------------------------------------------------
+ * SVG Diagram
+ * -------------------------------------------------------------------------- */
+
 .roadmap-diagram {
     display: block;
     margin: 0 auto;
@@ -85,7 +101,10 @@
     height: auto;
 }
 
-/* Section Headers - Badge Style matching React design */
+/* -----------------------------------------------------------------------------
+ * Section Headers
+ * -------------------------------------------------------------------------- */
+
 .section-header-group {
     cursor: default;
 }
@@ -109,7 +128,10 @@
     font-family: "JetBrains Mono", monospace;
 }
 
-/* Roadmap Nodes */
+/* -----------------------------------------------------------------------------
+ * Roadmap Nodes
+ * -------------------------------------------------------------------------- */
+
 .roadmap-node {
     cursor: pointer;
     transition: all var(--transition-slow);
@@ -122,10 +144,8 @@
     filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.5));
 }
 
-
-
 .roadmap-node .node-text {
-    font-size: 0.85rem; /* Reduced to fit smaller cards */
+    font-size: 0.85rem;
     pointer-events: none;
     text-anchor: middle;
     dominant-baseline: middle;
@@ -133,7 +153,10 @@
     font-weight: 500;
 }
 
-/* Main Topic Nodes (Center Spine) */
+/* -----------------------------------------------------------------------------
+ * Main Topic Nodes
+ * -------------------------------------------------------------------------- */
+
 .type-main .node-rect {
     fill: var(--bg-secondary);
     stroke: var(--orange-600);
@@ -143,10 +166,13 @@
 .type-main .node-text {
     fill: var(--text-primary);
     font-weight: 700;
-    font-size: 0.95rem; /* Reduced for main topics */
+    font-size: 0.95rem;
 }
 
-/* Sub Topic Nodes (Left/Right Branches) */
+/* -----------------------------------------------------------------------------
+ * Sub Topic Nodes
+ * -------------------------------------------------------------------------- */
+
 .type-sub .node-rect {
     fill: rgba(26, 26, 26, 0.4);
     stroke: var(--slate-700);
@@ -158,7 +184,10 @@
     font-weight: 500;
 }
 
-/* Node Hover State */
+/* -----------------------------------------------------------------------------
+ * Node Hover State
+ * -------------------------------------------------------------------------- */
+
 .roadmap-node:hover .node-rect {
     fill: var(--bg-card-hover);
     stroke: var(--text-primary);
@@ -170,7 +199,10 @@
     fill: var(--text-primary);
 }
 
-/* Connector Dots (for center nodes) */
+/* -----------------------------------------------------------------------------
+ * Connector Dots
+ * -------------------------------------------------------------------------- */
+
 .connector-dot {
     fill: var(--slate-600);
     transition: fill var(--transition-base);
@@ -180,7 +212,10 @@
     fill: var(--orange-400);
 }
 
-/* Edges */
+/* -----------------------------------------------------------------------------
+ * Edges
+ * -------------------------------------------------------------------------- */
+
 .roadmap-edge {
     stroke: var(--slate-700);
     stroke-width: 2;
@@ -198,7 +233,10 @@
     fill: var(--orange-600);
 }
 
-/* Roadmap End Marker */
+/* -----------------------------------------------------------------------------
+ * Roadmap End Marker
+ * -------------------------------------------------------------------------- */
+
 .roadmap-end {
     display: flex;
     flex-direction: column;
@@ -226,7 +264,10 @@
     font-size: 0.75rem;
 }
 
-/* Level Badges (inside center nodes) */
+/* -----------------------------------------------------------------------------
+ * Level Badges
+ * -------------------------------------------------------------------------- */
+
 .level-badge {
     font-size: 0.625rem;
     text-transform: uppercase;
@@ -245,7 +286,10 @@
     fill: #f87171;
 }
 
-/* Mobile Responsive */
+/* -----------------------------------------------------------------------------
+ * Responsive
+ * -------------------------------------------------------------------------- */
+
 @media (max-width: 768px) {
     .main-content {
         padding-top: 6rem;

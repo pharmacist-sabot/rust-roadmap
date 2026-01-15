@@ -1,0 +1,161 @@
+/**
+ * base.css - Reset, Typography, Font Imports
+ *
+ * Foundational styles for the Rust Roadmap application.
+ * Includes CSS reset, typography scale, and global utilities.
+ */
+
+/* -----------------------------------------------------------------------------
+ * CSS Reset
+ * -------------------------------------------------------------------------- */
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+    font-family: "JetBrains Mono", monospace;
+    background-color: var(--bg-primary);
+    color: var(--text-secondary);
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+    line-height: 1.6;
+}
+
+/* -----------------------------------------------------------------------------
+ * Typography
+ * -------------------------------------------------------------------------- */
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    font-family: "JetBrains Mono", monospace;
+    font-weight: 700;
+    line-height: 1.2;
+    color: var(--text-primary);
+}
+
+h1 {
+    font-size: 2.5rem;
+    letter-spacing: -0.025em;
+}
+
+h2 {
+    font-size: 2rem;
+    letter-spacing: -0.02em;
+}
+
+h3 {
+    font-size: 1.5rem;
+}
+
+p {
+    line-height: 1.7;
+}
+
+.mono-font {
+    font-family: "JetBrains Mono", monospace;
+}
+
+/* -----------------------------------------------------------------------------
+ * Selection Styling
+ * -------------------------------------------------------------------------- */
+
+::selection {
+    background-color: rgba(234, 88, 12, 0.3);
+    color: var(--text-primary);
+}
+
+::-moz-selection {
+    background-color: rgba(234, 88, 12, 0.3);
+    color: var(--text-primary);
+}
+
+/* -----------------------------------------------------------------------------
+ * Custom Scrollbar
+ * -------------------------------------------------------------------------- */
+
+::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bg-primary);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--slate-700);
+    border-radius: var(--radius-full);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--slate-600);
+}
+
+/* -----------------------------------------------------------------------------
+ * Links
+ * -------------------------------------------------------------------------- */
+
+a {
+    color: var(--orange-500);
+    text-decoration: none;
+    transition: color var(--transition-base);
+}
+
+a:hover {
+    color: var(--orange-400);
+}
+
+/* -----------------------------------------------------------------------------
+ * Focus Styles
+ * -------------------------------------------------------------------------- */
+
+:focus-visible {
+    outline: 2px solid var(--orange-500);
+    outline-offset: 2px;
+}
+
+/* -----------------------------------------------------------------------------
+ * Utility Classes
+ * -------------------------------------------------------------------------- */
+
+.text-gradient {
+    background: var(--gradient-hero);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.container {
+    width: 100%;
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 var(--space-6);
+}
+
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+}
