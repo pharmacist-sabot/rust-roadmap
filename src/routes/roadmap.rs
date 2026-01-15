@@ -82,7 +82,10 @@ pub fn RoadmapPage() -> impl IntoView {
 
             // Drawer (with backdrop)
             <Show when=move || is_drawer_open.get()>
-                <div class="drawer-backdrop" on:click=move |_| handle_close_detail.call(())></div>
+                <div
+                    class=move || if is_drawer_open.get() { "drawer-backdrop drawer-backdrop--visible" } else { "drawer-backdrop" }
+                    on:click=move |_| handle_close_detail.call(())
+                ></div>
                 {move || {
                     selected_content.get().map(|content| {
                         view! {

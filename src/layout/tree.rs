@@ -210,10 +210,19 @@ pub fn compute_layout(
         current_y = max_y_in_section + config.section_spacing;
     }
 
+    // Calculate actual max_x from topic positions to avoid clipping
+    let max_x = topic_positions
+        .iter()
+        .map(|p| p.x + p.width)
+        .fold(0.0_f64, |a, b| a.max(b));
+
+    // Use the greater of symmetric width or actual content width + padding
+    let calculated_width = (config.center_x * 2.0).max(max_x + 50.0);
+
     LayoutResult {
         sections: section_positions,
         topics: topic_positions,
-        total_width: config.center_x * 2.0, // Symmetric canvas
+        total_width: calculated_width,
         total_height: current_y + 100.0,
     }
 }
