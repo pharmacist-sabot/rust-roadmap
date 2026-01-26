@@ -8,6 +8,8 @@ use crate::layout::tree::{
 };
 use crate::models::roadmap::{Dependency, Section, Topic};
 use leptos::*;
+use std::cell::RefCell;
+use std::rc::Rc;
 
 #[derive(Clone)]
 pub struct DiagramData {
@@ -28,12 +30,14 @@ fn find_topic_position<'a>(positions: &'a [TopicPosition], id: &str) -> Option<&
     positions.iter().find(|p| p.topic_id == id)
 }
 
-/// Check if a topic title matches the search term (case-insensitive)
-fn topic_matches_search(topic: &Topic, term: &str) -> bool {
-    if term.is_empty() {
+/// Check if a topic title matches the search term (case-insensitive).
+/// Expects `term_lc` to already be lowercased to avoid repeated allocations.
+fn topic_matches_search(topic: &Topic, term_lc: &str) -> bool {
+    if term_lc.is_empty() {
         return false; // No highlight when search is empty
     }
-    topic.title.to_lowercase().contains(&term.to_lowercase())
+    // Still allocates for the topic title, but avoids re-lowercasing the search term
+    topic.title.to_lowercase().contains(term_lc)
 }
 
 /// Scroll to the first matching node in the viewport using web-sys (Pure Rust)
@@ -81,23 +85,49 @@ pub fn RoadmapDiagram(props: DiagramData) -> impl IntoView {
     let config = props.config;
     let on_topic_click = props.on_topic_click;
 
+    // Pre-compute lowercased search term once per change to avoid repeated allocations
+    let search_term_lc = create_memo(move |_| search_term.get().to_lowercase());
+
     // For scroll effect
     let topics_for_scroll = props.topics;
-    let search_term_for_scroll = search_term;
+    // Track last scrolled topic id to avoid redundant scrolls
+    let last_scrolled_topic_id: Rc<RefCell<Option<&'static str>>> = Rc::new(RefCell::new(None));
 
-    // Effect to scroll to first match when search term changes
-    create_effect(move |_| {
-        let term = search_term_for_scroll.get();
-        if !term.is_empty() {
-            // Find first matching topic
+    // Effect to scroll to first match when search term changes.
+    // Optimizations:
+    // - Gating on a minimum term length (2 chars)
+    // - Only scrolling when the first matching topic id actually changes
+    {
+        let last_scrolled_topic_id = Rc::clone(&last_scrolled_topic_id);
+        create_effect(move |_| {
+            let term_lc = search_term_lc.get();
+
+            // Avoid jitter and unnecessary scrolling for very short terms
+            if term_lc.len() < 2 {
+                // Reset so that a later, longer term can scroll again
+                *last_scrolled_topic_id.borrow_mut() = None;
+                return;
+            }
+
+            // Find first matching topic (if any)
+            let mut first_match_id: Option<&'static str> = None;
             for topic in topics_for_scroll.iter() {
-                if topic_matches_search(topic, &term) {
-                    scroll_to_first_match(topic.id);
+                if topic_matches_search(topic, &term_lc) {
+                    first_match_id = Some(topic.id);
                     break;
                 }
             }
-        }
-    });
+
+            if let Some(id) = first_match_id {
+                let mut last_id = last_scrolled_topic_id.borrow_mut();
+                // Only trigger scroll if the first match actually changed
+                if last_id.map(|prev| prev != id).unwrap_or(true) {
+                    scroll_to_first_match(id);
+                    *last_id = Some(id);
+                }
+            }
+        });
+    }
 
     // Pre-compute edge data (edges don't need to be reactive for highlight mode)
     let edge_props: Vec<_> = props
@@ -172,14 +202,14 @@ pub fn RoadmapDiagram(props: DiagramData) -> impl IntoView {
             </g>
             <g class="nodes-layer">
                 {move || {
-                    let term = search_term.get();
+                    let term_lc = search_term_lc.get();
 
                     // Show ALL nodes, but highlight matches
                     layout_topics
                         .iter()
                         .filter_map(|tp| {
                             let topic = find_topic(topics, tp.topic_id)?;
-                            let is_highlighted = topic_matches_search(topic, &term);
+                            let is_highlighted = topic_matches_search(topic, &term_lc);
 
                             Some(NodeData {
                                 id: topic.id,

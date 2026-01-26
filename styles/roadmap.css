@@ -201,18 +201,32 @@
 
 /* -----------------------------------------------------------------------------
  * Node Highlighted State (Search Match)
+ * Using stronger selectors to override base styles without !important
  * -------------------------------------------------------------------------- */
 
-.node-highlighted .node-rect {
-    stroke: var(--orange-500) !important;
-    stroke-width: 3 !important;
-    filter: drop-shadow(0 0 20px rgba(234, 88, 12, 0.9)) !important;
+.roadmap-node.node-highlighted .node-rect {
+    stroke: var(--orange-500);
+    stroke-width: 3;
+    filter: drop-shadow(0 0 20px rgba(234, 88, 12, 0.9));
     animation: highlight-pulse 1.5s ease-in-out infinite;
 }
 
-.node-highlighted .node-text {
-    fill: var(--text-primary) !important;
-    font-weight: 700 !important;
+.roadmap-node.node-highlighted .node-text {
+    fill: var(--text-primary);
+    font-weight: 700;
+}
+
+/* Override type-specific styles for highlighted nodes */
+.roadmap-node.node-highlighted.type-main .node-rect,
+.roadmap-node.node-highlighted.type-sub .node-rect {
+    stroke: var(--orange-500);
+    stroke-width: 3;
+    filter: drop-shadow(0 0 20px rgba(234, 88, 12, 0.9));
+}
+
+.roadmap-node.node-highlighted.type-sub .node-text {
+    fill: var(--text-primary);
+    font-weight: 700;
 }
 
 @keyframes highlight-pulse {
