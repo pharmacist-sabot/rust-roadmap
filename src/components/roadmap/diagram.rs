@@ -8,6 +8,8 @@ use crate::layout::tree::{
 };
 use crate::models::roadmap::{Dependency, Section, Topic};
 use leptos::*;
+use std::cell::RefCell;
+use std::rc::Rc;
 
 #[derive(Clone)]
 pub struct DiagramData {
@@ -17,6 +19,7 @@ pub struct DiagramData {
     pub layout: LayoutResult,
     pub config: LayoutConfig,
     pub on_topic_click: Callback<&'static str>,
+    pub search_term: ReadSignal<String>,
 }
 
 fn find_topic<'a>(topics: &'a [Topic], id: &str) -> Option<&'a Topic> {
@@ -27,6 +30,47 @@ fn find_topic_position<'a>(positions: &'a [TopicPosition], id: &str) -> Option<&
     positions.iter().find(|p| p.topic_id == id)
 }
 
+/// Check if a topic title matches the search term (case-insensitive).
+/// Expects `term_lc` to already be lowercased to avoid repeated allocations.
+fn topic_matches_search(topic: &Topic, term_lc: &str) -> bool {
+    if term_lc.is_empty() {
+        return false; // No highlight when search is empty
+    }
+    // Still allocates for the topic title, but avoids re-lowercasing the search term
+    topic.title.to_lowercase().contains(term_lc)
+}
+
+/// Scroll to the first matching node in the viewport using web-sys (Pure Rust)
+fn scroll_to_first_match(topic_id: &str) {
+    let window = match web_sys::window() {
+        Some(w) => w,
+        None => return,
+    };
+
+    let document = match window.document() {
+        Some(d) => d,
+        None => return,
+    };
+
+    let selector = format!("[data-topic-id=\"{}\"]", topic_id);
+    let element = match document.query_selector(&selector) {
+        Ok(Some(el)) => el,
+        _ => return,
+    };
+
+    // Create ScrollToOptions with smooth behavior
+    let scroll_options = web_sys::ScrollToOptions::new();
+    scroll_options.set_behavior(web_sys::ScrollBehavior::Smooth);
+
+    // Get element position and scroll with offset
+    let rect = element.get_bounding_client_rect();
+    let current_scroll = window.scroll_y().unwrap_or(0.0);
+    let target_y = current_scroll + rect.top() - 150.0; // 150px offset from top
+
+    scroll_options.set_top(target_y);
+    window.scroll_to_with_scroll_to_options(&scroll_options);
+}
+
 #[component]
 pub fn RoadmapDiagram(props: DiagramData) -> impl IntoView {
     let viewbox = format!(
@@ -34,27 +78,58 @@ pub fn RoadmapDiagram(props: DiagramData) -> impl IntoView {
         props.layout.min_x, props.layout.total_width, props.layout.total_height
     );
 
-    // Section headers calculation removed as requested
+    // Clone props for use in closures
+    let search_term = props.search_term;
+    let topics = props.topics;
+    let layout_topics = props.layout.topics.clone();
+    let config = props.config;
+    let on_topic_click = props.on_topic_click;
 
-    let node_props: Vec<_> = props
-        .layout
-        .topics
-        .iter()
-        .filter_map(|tp| {
-            find_topic(props.topics, tp.topic_id).map(|topic| NodeData {
-                id: topic.id,
-                x: tp.x,
-                y: tp.y,
-                width: tp.width,
-                height: props.config.node_height,
-                title: topic.title, // Correct field name
-                level: topic.level, // Restore level
-                topic_type: topic.topic_type,
-                on_click: props.on_topic_click,
-            })
-        })
-        .collect();
+    // Pre-compute lowercased search term once per change to avoid repeated allocations
+    let search_term_lc = create_memo(move |_| search_term.get().to_lowercase());
 
+    // For scroll effect
+    let topics_for_scroll = props.topics;
+    // Track last scrolled topic id to avoid redundant scrolls
+    let last_scrolled_topic_id: Rc<RefCell<Option<&'static str>>> = Rc::new(RefCell::new(None));
+
+    // Effect to scroll to first match when search term changes.
+    // Optimizations:
+    // - Gating on a minimum term length (2 chars)
+    // - Only scrolling when the first matching topic id actually changes
+    {
+        let last_scrolled_topic_id = Rc::clone(&last_scrolled_topic_id);
+        create_effect(move |_| {
+            let term_lc = search_term_lc.get();
+
+            // Avoid jitter and unnecessary scrolling for very short terms
+            if term_lc.len() < 2 {
+                // Reset so that a later, longer term can scroll again
+                *last_scrolled_topic_id.borrow_mut() = None;
+                return;
+            }
+
+            // Find first matching topic (if any)
+            let mut first_match_id: Option<&'static str> = None;
+            for topic in topics_for_scroll.iter() {
+                if topic_matches_search(topic, &term_lc) {
+                    first_match_id = Some(topic.id);
+                    break;
+                }
+            }
+
+            if let Some(id) = first_match_id {
+                let mut last_id = last_scrolled_topic_id.borrow_mut();
+                // Only trigger scroll if the first match actually changed
+                if last_id.map(|prev| prev != id).unwrap_or(true) {
+                    scroll_to_first_match(id);
+                    *last_id = Some(id);
+                }
+            }
+        });
+    }
+
+    // Pre-compute edge data (edges don't need to be reactive for highlight mode)
     let edge_props: Vec<_> = props
         .dependencies
         .iter()
@@ -64,9 +139,7 @@ pub fn RoadmapDiagram(props: DiagramData) -> impl IntoView {
             let from_topic = find_topic(props.topics, dep.from)?;
             let to_topic = find_topic(props.topics, dep.to)?;
 
-            // Determine connection points based on Placement
             let (x1, y1, x2, y2) = match (from_topic.placement, to_topic.placement) {
-                // Center → Right: exit from right edge, enter from left edge
                 (
                     crate::models::roadmap::Placement::Center,
                     crate::models::roadmap::Placement::Right,
@@ -75,7 +148,6 @@ pub fn RoadmapDiagram(props: DiagramData) -> impl IntoView {
                     let (tx, ty) = topic_left_edge(to_pos, &props.config);
                     (fx, fy, tx, ty)
                 }
-                // Center → Left: exit from left edge, enter from right edge
                 (
                     crate::models::roadmap::Placement::Center,
                     crate::models::roadmap::Placement::Left,
@@ -84,7 +156,6 @@ pub fn RoadmapDiagram(props: DiagramData) -> impl IntoView {
                     let (tx, ty) = topic_right_edge(to_pos, &props.config);
                     (fx, fy, tx, ty)
                 }
-                // Right → Right: horizontal chain (exit right, enter left)
                 (
                     crate::models::roadmap::Placement::Right,
                     crate::models::roadmap::Placement::Right,
@@ -93,7 +164,6 @@ pub fn RoadmapDiagram(props: DiagramData) -> impl IntoView {
                     let (tx, ty) = topic_left_edge(to_pos, &props.config);
                     (fx, fy, tx, ty)
                 }
-                // Left → Left: horizontal chain (exit left, enter right)
                 (
                     crate::models::roadmap::Placement::Left,
                     crate::models::roadmap::Placement::Left,
@@ -102,7 +172,6 @@ pub fn RoadmapDiagram(props: DiagramData) -> impl IntoView {
                     let (tx, ty) = topic_right_edge(to_pos, &props.config);
                     (fx, fy, tx, ty)
                 }
-                // Vertical spine connections (Center → Center): top/bottom
                 _ => {
                     let (fx, fy) = topic_bottom_edge(from_pos, &props.config);
                     let (tx, ty) = topic_top_edge(to_pos, &props.config);
@@ -110,7 +179,6 @@ pub fn RoadmapDiagram(props: DiagramData) -> impl IntoView {
                 }
             };
 
-            // Dashed line: different Section OR different TopicType
             let is_cross_section = from_pos.section_id != to_pos.section_id
                 || from_topic.topic_type != to_topic.topic_type;
 
@@ -132,10 +200,33 @@ pub fn RoadmapDiagram(props: DiagramData) -> impl IntoView {
             <g class="edges-layer">
                 {edge_props.into_iter().map(|ep| view! { <RoadmapEdge props=ep /> }).collect_view()}
             </g>
-            // Section headers removed as requested
             <g class="nodes-layer">
+                {move || {
+                    let term_lc = search_term_lc.get();
 
-                {node_props.into_iter().map(|np| view! { <RoadmapNode props=np /> }).collect_view()}
+                    // Show ALL nodes, but highlight matches
+                    layout_topics
+                        .iter()
+                        .filter_map(|tp| {
+                            let topic = find_topic(topics, tp.topic_id)?;
+                            let is_highlighted = topic_matches_search(topic, &term_lc);
+
+                            Some(NodeData {
+                                id: topic.id,
+                                x: tp.x,
+                                y: tp.y,
+                                width: tp.width,
+                                height: config.node_height,
+                                title: topic.title,
+                                level: topic.level,
+                                topic_type: topic.topic_type,
+                                on_click: on_topic_click,
+                                is_highlighted,
+                            })
+                        })
+                        .map(|np| view! { <RoadmapNode props=np /> })
+                        .collect_view()
+                }}
             </g>
         </svg>
     }

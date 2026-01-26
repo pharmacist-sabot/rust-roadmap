@@ -52,6 +52,7 @@ pub fn RoadmapPage() -> impl IntoView {
         layout,
         config,
         on_topic_click: handle_topic_click,
+        search_term,
     };
 
     view! {

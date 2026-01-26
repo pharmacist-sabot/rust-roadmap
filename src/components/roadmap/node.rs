@@ -14,6 +14,7 @@ pub struct NodeData {
     pub width: f64,
     pub height: f64,
     pub on_click: Callback<&'static str>,
+    pub is_highlighted: bool,
 }
 
 #[component]
@@ -24,7 +25,14 @@ pub fn RoadmapNode(props: NodeData) -> impl IntoView {
         TopicType::Sub => "type-sub",
     };
 
-    let class_attr = format!("roadmap-node {}", type_class);
+    // Add highlight class if node matches search
+    let highlight_class = if props.is_highlighted {
+        " node-highlighted"
+    } else {
+        ""
+    };
+
+    let class_attr = format!("roadmap-node {}{}", type_class, highlight_class);
 
     view! {
         <g

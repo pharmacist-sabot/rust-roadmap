@@ -110,7 +110,11 @@
     font-size: 0.875rem;
     color: var(--text-tertiary);
     font-family: "Inter", sans-serif;
-    width: 8rem;
+    width: 10rem;
+    min-width: 10rem;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
     transition: all var(--transition-slow) var(--ease-out);
 }
 
@@ -146,10 +150,11 @@
     }
 
     .header__search-input {
-        width: 6rem;
+        width: 8rem;
+        min-width: 8rem;
     }
 
     .header__search-input:focus {
-        width: 12rem;
+        width: 10rem;
     }
 }
