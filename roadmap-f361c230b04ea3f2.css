@@ -200,6 +200,45 @@
 }
 
 /* -----------------------------------------------------------------------------
+ * Node Highlighted State (Search Match)
+ * Using stronger selectors to override base styles without !important
+ * -------------------------------------------------------------------------- */
+
+.roadmap-node.node-highlighted .node-rect {
+    stroke: var(--orange-500);
+    stroke-width: 3;
+    filter: drop-shadow(0 0 20px rgba(234, 88, 12, 0.9));
+    animation: highlight-pulse 1.5s ease-in-out infinite;
+}
+
+.roadmap-node.node-highlighted .node-text {
+    fill: var(--text-primary);
+    font-weight: 700;
+}
+
+/* Override type-specific styles for highlighted nodes */
+.roadmap-node.node-highlighted.type-main .node-rect,
+.roadmap-node.node-highlighted.type-sub .node-rect {
+    stroke: var(--orange-500);
+    stroke-width: 3;
+    filter: drop-shadow(0 0 20px rgba(234, 88, 12, 0.9));
+}
+
+.roadmap-node.node-highlighted.type-sub .node-text {
+    fill: var(--text-primary);
+    font-weight: 700;
+}
+
+@keyframes highlight-pulse {
+    0%, 100% {
+        filter: drop-shadow(0 0 15px rgba(234, 88, 12, 0.8));
+    }
+    50% {
+        filter: drop-shadow(0 0 25px rgba(234, 88, 12, 1));
+    }
+}
+
+/* -----------------------------------------------------------------------------
  * Connector Dots
  * -------------------------------------------------------------------------- */
 
