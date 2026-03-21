@@ -1,12 +1,12 @@
 <div align="center">
 
-# 🦀 Rust Roadmap
+# Rust Roadmap 🦀
 
-[![Rust](https://img.shields.io/badge/Rust-Edition_2024-000000?style=for-the-badge&logo=rust&logoColor=white)](https://www.rust-lang.org/)
-[![Leptos](https://img.shields.io/badge/Leptos-0.6-FF8937?style=for-the-badge)](https://leptos.dev/)
-[![WebAssembly](https://img.shields.io/badge/WebAssembly-654FF0?style=for-the-badge&logo=webassembly&logoColor=white)](https://webassembly.org/)
-[![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](LICENSE)
-[![Deploy](https://img.shields.io/github/actions/workflow/status/pharmacist-sabot/rust-roadmap/deploy.yml?style=for-the-badge&label=Deploy)](https://github.com/pharmacist-sabot/rust-roadmap/actions)
+[![Rust](https://img.shields.io/badge/Rust-Edition_2024-000000?logo=rust&logoColor=white)](https://www.rust-lang.org/)
+[![Leptos](https://img.shields.io/badge/Leptos-0.6-FF8937)](https://leptos.dev/)
+[![WebAssembly](https://img.shields.io/badge/WebAssembly-654FF0?logo=webassembly&logoColor=white)](https://webassembly.org/)
+[![License](https://img.shields.io/badge/License-MIT-blue)](LICENSE)
+[![Deploy](https://img.shields.io/github/actions/workflow/status/pharmacist-sabot/rust-roadmap/deploy.yml?label=Deploy)](https://github.com/pharmacist-sabot/rust-roadmap/actions)
 
 **An interactive, type-safe visualization of the Rust learning path.**
 
@@ -16,17 +16,17 @@
 
 ---
 
-## ✨ Features
+## Features
 
-- **📖 Comprehensive Learning Path** — 27 curated sections covering Rust from fundamentals to advanced domains including WebAssembly, embedded systems, and game development.
-- **🔍 Interactive Detail View** — Click any topic to reveal a slide-in drawer with descriptions and curated learning resources (Official docs, Books, Videos, Articles, and more).
-- **🎯 Deterministic Layout** — Custom "Fishbone" positioning algorithm ensures pixel-perfect, consistent visualization across all devices.
-- **⚡ Compile-Time Validation** — All topics, dependencies, and content are Rust structs verified at compile time. Invalid links or missing data break the build.
-- **🎨 Premium Dark Theme** — Carefully designed CSS token system with orange/red accents inspired by Rust's brand identity.
+- **Comprehensive Learning Path** — 27 curated sections covering Rust from fundamentals to advanced domains including WebAssembly, embedded systems, and game development.
+- **Interactive Detail View** — Click any topic to reveal a slide-in drawer with descriptions and curated learning resources (Official docs, Books, Videos, Articles, and more).
+- **Deterministic Layout** — Custom "Fishbone" positioning algorithm ensures pixel-perfect, consistent visualization across all devices.
+- **Compile-Time Validation** — All topics, dependencies, and content are Rust structs verified at compile time. Invalid links or missing data break the build.
+- **Premium Dark Theme** — Carefully designed CSS token system with orange/red accents inspired by Rust's brand identity.
 
 ---
 
-## 🏗️ Architecture
+## Architecture
 
 This project enforces strict **separation of concerns** between content, layout logic, and rendering.
 
@@ -59,7 +59,7 @@ src/
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 | Technology | Purpose |
 |------------|---------|
@@ -72,7 +72,7 @@ src/
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 
@@ -109,7 +109,7 @@ Optimized artifacts are generated in the `dist/` directory.
 
 ---
 
-## 📚 Content Structure
+## Content Structure
 
 Each section follows a consistent module pattern:
 
@@ -170,7 +170,7 @@ Content resources are categorized with semantic badges:
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
 Contributions are welcome! Please follow these guidelines:
 
@@ -209,7 +209,7 @@ cargo test --verbose
 
 ---
 
-## 📄 License
+## License
 
 This project is licensed under the **MIT License**. See [LICENSE](LICENSE) for details.
 
