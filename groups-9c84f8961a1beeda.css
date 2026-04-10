@@ -1,0 +1,53 @@
+/**
+ * groups.css - Section Group Boxes
+ *
+ * SVG styles for the horizontal section group boxes that contain topics.
+ * Each group has a colored header bar with a title label.
+ */
+
+/* -----------------------------------------------------------------------------
+ * Group Container
+ * -------------------------------------------------------------------------- */
+
+/* -----------------------------------------------------------------------------
+ * Group Background
+ * -------------------------------------------------------------------------- */
+
+.section-group__bg {
+    fill: rgba(15, 23, 42, 0.55);
+    stroke: rgba(51, 65, 85, 0.7);
+    stroke-width: 1;
+    filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.4));
+}
+
+/* -----------------------------------------------------------------------------
+ * Group Header Bar
+ * -------------------------------------------------------------------------- */
+
+.section-group__header {
+    fill: rgba(234, 88, 12, 0.14);
+}
+
+/* -----------------------------------------------------------------------------
+ * Group Title Label
+ * -------------------------------------------------------------------------- */
+
+.section-group__title {
+    fill: var(--orange-400);
+    font-family: "JetBrains Mono", monospace;
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    pointer-events: none;
+}
+
+/* -----------------------------------------------------------------------------
+ * Responsive — smaller labels on narrow screens
+ * -------------------------------------------------------------------------- */
+
+@media (max-width: 768px) {
+    .section-group__title {
+        font-size: 0.55rem;
+    }
+}

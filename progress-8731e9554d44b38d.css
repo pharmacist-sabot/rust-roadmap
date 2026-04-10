@@ -1,0 +1,68 @@
+/**
+ * progress.css - Header Progress Bar & Completion Badge
+ *
+ * A thin animated progress bar rendered below the sticky header,
+ * plus a completion percentage label.
+ */
+
+/* -----------------------------------------------------------------------------
+ * Progress Row (inside the header element)
+ * -------------------------------------------------------------------------- */
+
+.progress-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.4rem 1.5rem 0.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+/* -----------------------------------------------------------------------------
+ * Track
+ * -------------------------------------------------------------------------- */
+
+.progress-track {
+    flex: 1;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.07);
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+/* -----------------------------------------------------------------------------
+ * Fill
+ * -------------------------------------------------------------------------- */
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--orange-600), var(--orange-400));
+    border-radius: 2px;
+    transition: width 0.4s ease;
+    box-shadow: 0 0 8px rgba(234, 88, 12, 0.45);
+    min-width: 2px; /* always show a sliver */
+}
+
+/* -----------------------------------------------------------------------------
+ * Label
+ * -------------------------------------------------------------------------- */
+
+.progress-label {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 0.65rem;
+    font-weight: 600;
+    color: var(--orange-400);
+    white-space: nowrap;
+    min-width: 9rem;
+    text-align: right;
+    opacity: 0.85;
+}
+
+/* -----------------------------------------------------------------------------
+ * Reduced Motion
+ * -------------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+    .progress-fill {
+        transition: none;
+    }
+}
