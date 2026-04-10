@@ -49,11 +49,10 @@ pub fn load_progress() -> HashMap<String, NodeStatus> {
 
   for pair in raw.split('|') {
     let mut parts = pair.splitn(2, ':');
-    if let (Some(id), Some(status_str)) = (parts.next(), parts.next()) {
-      if let Some(status) = str_to_status(status_str) {
+    if let (Some(id), Some(status_str)) = (parts.next(), parts.next())
+      && let Some(status) = str_to_status(status_str) {
         map.insert(id.to_string(), status);
       }
-    }
   }
 
   map

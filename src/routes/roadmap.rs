@@ -26,7 +26,7 @@ pub fn RoadmapPage() -> impl IntoView {
   // Global state — provide via context so all child components can access it
   // -----------------------------------------------------------------------
   let state = RoadmapState::new(total_topics);
-  provide_context(state.clone());
+  provide_context(state);
 
   // Convenience aliases
   let search_term = state.search_term;

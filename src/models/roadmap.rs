@@ -9,18 +9,13 @@ pub enum Level {
 }
 
 /// Progress status for a topic node.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
 pub enum NodeStatus {
+  #[default]
   Untouched,
   InProgress,
   Done,
   Skipped,
-}
-
-impl Default for NodeStatus {
-  fn default() -> Self {
-    NodeStatus::Untouched
-  }
 }
 
 impl NodeStatus {
