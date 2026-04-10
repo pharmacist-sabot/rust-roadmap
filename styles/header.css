@@ -16,20 +16,26 @@
     z-index: var(--z-header);
     transition: all var(--transition-slow) var(--ease-out);
     border-bottom: 1px solid transparent;
-    padding: var(--space-6) 0;
+    display: flex;
+    flex-direction: column;
+    background: rgba(5, 5, 5, 0.75);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
 }
 
 .header--scrolled {
-    background-color: rgba(5, 5, 5, 0.9);
+    background-color: rgba(5, 5, 5, 0.95);
     border-bottom-color: var(--slate-800);
-    backdrop-filter: blur(12px);
-    padding: var(--space-3) 0;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
 }
 
 .header__container {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    padding-top: var(--space-4);
+    padding-bottom: var(--space-4);
 }
 
 /* -----------------------------------------------------------------------------

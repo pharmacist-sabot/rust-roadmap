@@ -1,233 +1,280 @@
 //! Main roadmap diagram component.
+//!
+//! Renders the full SVG canvas including:
+//! - Section group boxes (`SectionGroup`)
+//! - Topic nodes (`RoadmapNode`) with status and search-dimming
+//! - Connector edges (`RoadmapEdge`) with horizontal cross-section routing
 
 use crate::components::roadmap::edge::{ArrowheadMarker, EdgeData, RoadmapEdge};
+use crate::components::roadmap::group::{GroupBoxData, SectionGroup};
 use crate::components::roadmap::node::{NodeData, RoadmapNode};
-use crate::layout::tree::{
-    LayoutConfig, LayoutResult, TopicPosition, topic_bottom_edge, topic_left_edge,
-    topic_right_edge, topic_top_edge,
-};
-use crate::models::roadmap::{Dependency, Section, Topic};
+use crate::layout::tree::{LayoutConfig, LayoutResult, TopicPosition};
+use crate::models::roadmap::{Dependency, Topic};
+use crate::state::roadmap_state::RoadmapState;
 use leptos::*;
 use std::cell::RefCell;
 use std::rc::Rc;
 
+// ---------------------------------------------------------------------------
+// Public data type passed from the page
+// ---------------------------------------------------------------------------
+
 #[derive(Clone)]
 pub struct DiagramData {
-    pub sections: &'static [Section],
-    pub topics: &'static [Topic],
-    pub dependencies: &'static [Dependency],
-    pub layout: LayoutResult,
-    pub config: LayoutConfig,
-    pub on_topic_click: Callback<&'static str>,
-    pub search_term: ReadSignal<String>,
+  pub topics: &'static [Topic],
+  pub dependencies: &'static [Dependency],
+  pub layout: LayoutResult,
+  pub config: LayoutConfig,
 }
+
+// ---------------------------------------------------------------------------
+// Internal helpers
+// ---------------------------------------------------------------------------
 
 fn find_topic<'a>(topics: &'a [Topic], id: &str) -> Option<&'a Topic> {
-    topics.iter().find(|t| t.id == id)
+  topics.iter().find(|t| t.id == id)
 }
 
-fn find_topic_position<'a>(positions: &'a [TopicPosition], id: &str) -> Option<&'a TopicPosition> {
-    positions.iter().find(|p| p.topic_id == id)
+fn find_position<'a>(positions: &'a [TopicPosition], id: &str) -> Option<&'a TopicPosition> {
+  positions.iter().find(|p| p.topic_id == id)
 }
 
-/// Check if a topic title matches the search term (case-insensitive).
-/// Expects `term_lc` to already be lowercased to avoid repeated allocations.
-fn topic_matches_search(topic: &Topic, term_lc: &str) -> bool {
-    if term_lc.is_empty() {
-        return false; // No highlight when search is empty
-    }
-    // Still allocates for the topic title, but avoids re-lowercasing the search term
-    topic.title.to_lowercase().contains(term_lc)
+/// Returns `true` when `term_lc` (already lowercased) appears in the topic title.
+fn topic_matches(topic: &Topic, term_lc: &str) -> bool {
+  !term_lc.is_empty() && topic.title.to_lowercase().contains(term_lc)
 }
 
-/// Scroll to the first matching node in the viewport using web-sys (Pure Rust)
-fn scroll_to_first_match(topic_id: &str) {
-    let window = match web_sys::window() {
-        Some(w) => w,
-        None => return,
-    };
+/// Try to scroll the `.roadmap-container` div so the matched node is visible.
+fn scroll_to_match(topic_id: &str) {
+  let window = match web_sys::window() {
+    Some(w) => w,
+    None => return,
+  };
+  let document = match window.document() {
+    Some(d) => d,
+    None => return,
+  };
 
-    let document = match window.document() {
-        Some(d) => d,
-        None => return,
-    };
+  let selector = format!("[data-topic-id=\"{}\"]", topic_id);
+  let element = match document.query_selector(&selector) {
+    Ok(Some(el)) => el,
+    _ => return,
+  };
 
-    let selector = format!("[data-topic-id=\"{}\"]", topic_id);
-    let element = match document.query_selector(&selector) {
-        Ok(Some(el)) => el,
-        _ => return,
-    };
+  // Prefer scrolling inside the horizontal container
+  let container = document.query_selector(".roadmap-container").ok().flatten();
 
-    // Create ScrollToOptions with smooth behavior
-    let scroll_options = web_sys::ScrollToOptions::new();
-    scroll_options.set_behavior(web_sys::ScrollBehavior::Smooth);
+  if let Some(c) = container {
+    let c_rect = c.get_bounding_client_rect();
+    let el_rect = element.get_bounding_client_rect();
 
-    // Get element position and scroll with offset
+    // How far the element's left edge is from the container's left edge in the viewport
+    let offset_in_viewport = el_rect.left() - c_rect.left();
+    // Current horizontal scroll of the container
+    let current_sl = c.scroll_left() as f64;
+    // Target: centre the element horizontally with some left margin
+    let target_x = (current_sl + offset_in_viewport - 120.0).max(0.0);
+
+    // ScrollToOptions works on Window; use scrollLeft directly via JS eval is tricky.
+    // Fallback: scroll the window to at least bring it into the y-axis view.
+    let opts = web_sys::ScrollToOptions::new();
+    opts.set_behavior(web_sys::ScrollBehavior::Smooth);
+    opts.set_top(window.scroll_y().unwrap_or(0.0) + el_rect.top() - 150.0);
+    opts.set_left(target_x);
+    window.scroll_to_with_scroll_to_options(&opts);
+  } else {
+    // Plain vertical scroll fallback
     let rect = element.get_bounding_client_rect();
-    let current_scroll = window.scroll_y().unwrap_or(0.0);
-    let target_y = current_scroll + rect.top() - 150.0; // 150px offset from top
-
-    scroll_options.set_top(target_y);
-    window.scroll_to_with_scroll_to_options(&scroll_options);
+    let opts = web_sys::ScrollToOptions::new();
+    opts.set_behavior(web_sys::ScrollBehavior::Smooth);
+    opts.set_top(window.scroll_y().unwrap_or(0.0) + rect.top() - 150.0);
+    window.scroll_to_with_scroll_to_options(&opts);
+  }
 }
+
+// ---------------------------------------------------------------------------
+// Component
+// ---------------------------------------------------------------------------
 
 #[component]
 pub fn RoadmapDiagram(props: DiagramData) -> impl IntoView {
-    let viewbox = format!(
-        "{} 0 {} {}",
-        props.layout.min_x, props.layout.total_width, props.layout.total_height
-    );
+  // Pull global state from context (provided by RoadmapPage).
+  let state = use_context::<RoadmapState>().expect("RoadmapState context not found");
 
-    // Clone props for use in closures
-    let search_term = props.search_term;
-    let topics = props.topics;
-    let layout_topics = props.layout.topics.clone();
-    let config = props.config;
-    let on_topic_click = props.on_topic_click;
+  let search_term = state.search_term;
+  let progress = state.progress;
+  let selected_id = state.selected_topic_id;
 
-    // Pre-compute lowercased search term once per change to avoid repeated allocations
-    let search_term_lc = create_memo(move |_| search_term.get().to_lowercase());
+  // Callback that wires node clicks to the drawer.
+  let on_topic_click = Callback::new(move |id: &'static str| {
+    selected_id.set(Some(id));
+  });
 
-    // For scroll effect
-    let topics_for_scroll = props.topics;
-    // Track last scrolled topic id to avoid redundant scrolls
-    let last_scrolled_topic_id: Rc<RefCell<Option<&'static str>>> = Rc::new(RefCell::new(None));
+  // Pre-compute lowercased search term once per change.
+  let search_lc = create_memo(move |_| search_term.get().to_lowercase());
 
-    // Effect to scroll to first match when search term changes.
-    // Optimizations:
-    // - Gating on a minimum term length (2 chars)
-    // - Only scrolling when the first matching topic id actually changes
-    {
-        let last_scrolled_topic_id = Rc::clone(&last_scrolled_topic_id);
-        create_effect(move |_| {
-            let term_lc = search_term_lc.get();
+  // Snapshot values for use in closures.
+  let config = props.config;
+  let topics = props.topics;
+  let layout_topics = props.layout.topics.clone();
+  let layout_groups = props.layout.groups.clone();
+  let topics_for_scroll = props.topics;
 
-            // Avoid jitter and unnecessary scrolling for very short terms
-            if term_lc.len() < 2 {
-                // Reset so that a later, longer term can scroll again
-                *last_scrolled_topic_id.borrow_mut() = None;
-                return;
-            }
+  // ── Scroll effect ──────────────────────────────────────────────────────
+  let last_scrolled: Rc<RefCell<Option<&'static str>>> = Rc::new(RefCell::new(None));
 
-            // Find first matching topic (if any)
-            let mut first_match_id: Option<&'static str> = None;
-            for topic in topics_for_scroll.iter() {
-                if topic_matches_search(topic, &term_lc) {
-                    first_match_id = Some(topic.id);
-                    break;
-                }
-            }
-
-            if let Some(id) = first_match_id {
-                let mut last_id = last_scrolled_topic_id.borrow_mut();
-                // Only trigger scroll if the first match actually changed
-                if last_id.map(|prev| prev != id).unwrap_or(true) {
-                    scroll_to_first_match(id);
-                    *last_id = Some(id);
-                }
-            }
-        });
-    }
-
-    // Pre-compute edge data (edges don't need to be reactive for highlight mode)
-    let edge_props: Vec<_> = props
-        .dependencies
+  {
+    let last_scrolled = Rc::clone(&last_scrolled);
+    create_effect(move |_| {
+      let term = search_lc.get();
+      if term.len() < 2 {
+        *last_scrolled.borrow_mut() = None;
+        return;
+      }
+      // Find first topic whose title matches.
+      let first = topics_for_scroll
         .iter()
-        .filter_map(|dep| {
-            let from_pos = find_topic_position(&props.layout.topics, dep.from)?;
-            let to_pos = find_topic_position(&props.layout.topics, dep.to)?;
-            let from_topic = find_topic(props.topics, dep.from)?;
-            let to_topic = find_topic(props.topics, dep.to)?;
+        .find(|t| topic_matches(t, &term))
+        .map(|t| t.id);
 
-            let (x1, y1, x2, y2) = match (from_topic.placement, to_topic.placement) {
-                (
-                    crate::models::roadmap::Placement::Center,
-                    crate::models::roadmap::Placement::Right,
-                ) => {
-                    let (fx, fy) = topic_right_edge(from_pos, &props.config);
-                    let (tx, ty) = topic_left_edge(to_pos, &props.config);
-                    (fx, fy, tx, ty)
-                }
-                (
-                    crate::models::roadmap::Placement::Center,
-                    crate::models::roadmap::Placement::Left,
-                ) => {
-                    let (fx, fy) = topic_left_edge(from_pos, &props.config);
-                    let (tx, ty) = topic_right_edge(to_pos, &props.config);
-                    (fx, fy, tx, ty)
-                }
-                (
-                    crate::models::roadmap::Placement::Right,
-                    crate::models::roadmap::Placement::Right,
-                ) => {
-                    let (fx, fy) = topic_right_edge(from_pos, &props.config);
-                    let (tx, ty) = topic_left_edge(to_pos, &props.config);
-                    (fx, fy, tx, ty)
-                }
-                (
-                    crate::models::roadmap::Placement::Left,
-                    crate::models::roadmap::Placement::Left,
-                ) => {
-                    let (fx, fy) = topic_left_edge(from_pos, &props.config);
-                    let (tx, ty) = topic_right_edge(to_pos, &props.config);
-                    (fx, fy, tx, ty)
-                }
-                _ => {
-                    let (fx, fy) = topic_bottom_edge(from_pos, &props.config);
-                    let (tx, ty) = topic_top_edge(to_pos, &props.config);
-                    (fx, fy, tx, ty)
-                }
-            };
+      if let Some(id) = first {
+        let mut last = last_scrolled.borrow_mut();
+        if last.map(|prev| prev != id).unwrap_or(true) {
+          scroll_to_match(id);
+          *last = Some(id);
+        }
+      }
+    });
+  }
 
-            let is_cross_section = from_pos.section_id != to_pos.section_id
-                || from_topic.topic_type != to_topic.topic_type;
+  // ── Build static edge list ─────────────────────────────────────────────
+  // Edges are not reactive (positions never change); only class/style varies
+  // with state, which is handled on the node side, not the edge side.
+  let edge_props: Vec<EdgeData> = props
+    .dependencies
+    .iter()
+    .filter_map(|dep| {
+      let from_pos = find_position(&props.layout.topics, dep.from)?;
+      let to_pos = find_position(&props.layout.topics, dep.to)?;
 
-            Some(EdgeData {
-                from_id: dep.from,
-                to_id: dep.to,
-                x1,
-                y1,
-                x2,
-                y2,
-                is_cross_section,
-            })
-        })
-        .collect();
+      let is_cross = from_pos.section_id != to_pos.section_id;
 
-    view! {
-        <svg class="roadmap-diagram" viewBox=viewbox xmlns="http://www.w3.org/2000/svg">
-            <ArrowheadMarker />
-            <g class="edges-layer">
-                {edge_props.into_iter().map(|ep| view! { <RoadmapEdge props=ep /> }).collect_view()}
-            </g>
-            <g class="nodes-layer">
-                {move || {
-                    let term_lc = search_term_lc.get();
+      let (x1, y1, x2, y2) = if is_cross {
+        // Cross-section: exit via right edge of "from", enter via left edge of "to".
+        // Groups flow left → right so from_pos is always to the left of to_pos.
+        let x1 = from_pos.x + from_pos.width;
+        let y1 = from_pos.y + config.node_height / 2.0;
+        let x2 = to_pos.x;
+        let y2 = to_pos.y + config.node_height / 2.0;
+        (x1, y1, x2, y2)
+      } else {
+        // Intra-section: bottom-centre of "from" → top-centre of "to".
+        let x1 = from_pos.x + from_pos.width / 2.0;
+        let y1 = from_pos.y + config.node_height;
+        let x2 = to_pos.x + to_pos.width / 2.0;
+        let y2 = to_pos.y;
+        (x1, y1, x2, y2)
+      };
 
-                    // Show ALL nodes, but highlight matches
-                    layout_topics
-                        .iter()
-                        .filter_map(|tp| {
-                            let topic = find_topic(topics, tp.topic_id)?;
-                            let is_highlighted = topic_matches_search(topic, &term_lc);
+      Some(EdgeData {
+        from_id: dep.from,
+        to_id: dep.to,
+        x1,
+        y1,
+        x2,
+        y2,
+        is_cross_section: is_cross,
+      })
+    })
+    .collect();
 
-                            Some(NodeData {
-                                id: topic.id,
-                                x: tp.x,
-                                y: tp.y,
-                                width: tp.width,
-                                height: config.node_height,
-                                title: topic.title,
-                                level: topic.level,
-                                topic_type: topic.topic_type,
-                                on_click: on_topic_click,
-                                is_highlighted,
-                            })
-                        })
-                        .map(|np| view! { <RoadmapNode props=np /> })
-                        .collect_view()
-                }}
-            </g>
-        </svg>
-    }
+  // ── Static group box views ─────────────────────────────────────────────
+  let group_views: Vec<_> = layout_groups
+    .iter()
+    .map(|g| {
+      let gdata = GroupBoxData {
+        section_id: g.section_id,
+        x: g.x,
+        y: g.y,
+        width: g.width,
+        height: g.height,
+        label: g.label,
+        header_height: config.header_height,
+      };
+      view! { <SectionGroup props=gdata /> }
+    })
+    .collect();
+
+  // ── viewBox ────────────────────────────────────────────────────────────
+  let viewbox = format!(
+    "{} 0 {} {}",
+    props.layout.min_x, props.layout.total_width, props.layout.total_height
+  );
+
+  // ── View ───────────────────────────────────────────────────────────────
+  let svg_width = format!("{:.0}", props.layout.total_width);
+  let svg_height = format!("{:.0}", props.layout.total_height);
+
+  view! {
+      <svg
+          class="roadmap-diagram roadmap-diagram--horizontal"
+          viewBox=viewbox
+          width=svg_width
+          height=svg_height
+          xmlns="http://www.w3.org/2000/svg"
+      >
+          <ArrowheadMarker />
+
+          // Groups layer — behind edges and nodes
+          <g class="groups-layer">
+              {group_views}
+          </g>
+
+          // Edges layer — static, rendered once
+          <g class="edges-layer">
+              {edge_props
+                  .into_iter()
+                  .map(|ep| view! { <RoadmapEdge props=ep /> })
+                  .collect_view()}
+          </g>
+
+          // Nodes layer — reactive on search + progress
+          <g class="nodes-layer">
+              {move || {
+                  let term = search_lc.get();
+                  let prog = progress.get();
+                  let has_search = !term.is_empty();
+
+                  layout_topics
+                      .iter()
+                      .filter_map(|tp| {
+                          let topic = find_topic(topics, tp.topic_id)?;
+                          let is_highlighted = topic_matches(topic, &term);
+                          let is_dimmed = has_search && !is_highlighted;
+                          let status = prog
+                              .get(topic.id)
+                              .copied()
+                              .unwrap_or_default();
+
+                          Some(NodeData {
+                              id: topic.id,
+                              title: topic.title,
+                              level: topic.level,
+                              topic_type: topic.topic_type,
+                              x: tp.x,
+                              y: tp.y,
+                              width: tp.width,
+                              height: config.node_height,
+                              on_click: on_topic_click,
+                              is_highlighted,
+                              is_dimmed,
+                              status,
+                          })
+                      })
+                      .map(|nd| view! { <RoadmapNode props=nd /> })
+                      .collect_view()
+              }}
+          </g>
+      </svg>
+  }
 }

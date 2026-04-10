@@ -1,7 +1,7 @@
 use crate::models::roadmap::{BadgeKind, Resource, TopicContent};
 
 pub fn get_content(id: &str) -> Option<TopicContent> {
-    match id {
+  match id {
         "intro" => Some(TopicContent {
             title: "Introduction",
             description: "Rust is a modern systems programming language developed by Graydon Hoare at

@@ -6,99 +6,116 @@ use crate::components::ui::hero::Hero;
 use crate::data::get_topic_content;
 use crate::data::{SECTIONS, get_all_dependencies, get_all_topics};
 use crate::layout::tree::{LayoutConfig, compute_layout};
+use crate::state::roadmap_state::RoadmapState;
 use leptos::*;
 
 #[component]
 pub fn RoadmapPage() -> impl IntoView {
-    let config = LayoutConfig::default();
+  let config = LayoutConfig::default();
 
-    let topics = get_all_topics();
-    let dependencies = get_all_dependencies();
+  let topics = get_all_topics();
+  let total_topics = topics.len();
+  let dependencies = get_all_dependencies();
 
-    let static_topics = Box::leak(topics.into_boxed_slice());
-    let static_deps = Box::leak(dependencies.into_boxed_slice());
+  let static_topics: &'static [_] = Box::leak(topics.into_boxed_slice());
+  let static_deps: &'static [_] = Box::leak(dependencies.into_boxed_slice());
 
-    let layout = compute_layout(SECTIONS, static_topics, static_deps, &config);
+  let layout = compute_layout(SECTIONS, static_topics, static_deps, &config);
 
-    // Search state
-    let (search_term, set_search_term) = create_signal(String::new());
+  // -----------------------------------------------------------------------
+  // Global state — provide via context so all child components can access it
+  // -----------------------------------------------------------------------
+  let state = RoadmapState::new(total_topics);
+  provide_context(state.clone());
 
-    // State for selected topic ID
-    let (selected_topic_id, set_selected_topic_id) = create_signal(None::<&'static str>);
+  // Convenience aliases
+  let search_term = state.search_term;
+  let selected_topic_id = state.selected_topic_id;
 
-    // Derived signal for content
-    let selected_content =
-        create_memo(move |_| selected_topic_id.get().and_then(get_topic_content));
+  // -----------------------------------------------------------------------
+  // Callbacks
+  // -----------------------------------------------------------------------
+  let handle_search = Callback::new(move |term: String| {
+    search_term.set(term);
+  });
 
-    // Check if drawer is open
-    let is_drawer_open = create_memo(move |_| selected_topic_id.get().is_some());
+  let handle_close_detail = Callback::new(move |_: ()| {
+    selected_topic_id.set(None);
+  });
 
-    let handle_search = Callback::new(move |term: String| {
-        set_search_term.set(term);
-    });
+  // -----------------------------------------------------------------------
+  // Derived signals
+  // -----------------------------------------------------------------------
+  let is_drawer_open = create_memo(move |_| selected_topic_id.get().is_some());
 
-    let handle_topic_click = Callback::new(move |id: &'static str| {
-        set_selected_topic_id.set(Some(id));
-    });
+  // -----------------------------------------------------------------------
+  // Diagram props (on_topic_click now lives inside RoadmapDiagram via context)
+  // -----------------------------------------------------------------------
+  let diagram_props = DiagramData {
+    topics: static_topics,
+    dependencies: static_deps,
+    layout,
+    config,
+  };
 
-    let handle_close_detail = Callback::new(move |_| {
-        set_selected_topic_id.set(None);
-    });
+  view! {
+      <div class="roadmap-page">
+          // Background decorations
+          <div class="bg-decorations">
+              <div class="glow-orb"></div>
+              <div class="noise-overlay"></div>
+          </div>
 
-    let diagram_props = DiagramData {
-        sections: SECTIONS,
-        topics: static_topics,
-        dependencies: static_deps,
-        layout,
-        config,
-        on_topic_click: handle_topic_click,
-        search_term,
-    };
+          // Sticky header (contains search + progress bar)
+          <Header search_term=search_term.read_only() on_search=handle_search />
 
-    view! {
-        <div class="roadmap-page">
-            // Background Decorations
-            <div class="bg-decorations">
-                <div class="glow-orb"></div>
-                <div class="noise-overlay"></div>
-            </div>
+          // Main content
+          <main class="main-content">
+              <Hero />
 
-            // Header
-            <Header search_term=search_term on_search=handle_search />
+              // Horizontally-scrollable roadmap canvas
+              <div class="roadmap-container">
+                  <RoadmapDiagram props=diagram_props />
+              </div>
+          </main>
 
-            // Main Content
-            <main class="main-content">
-                // Hero Section
-                <Hero />
+          <Footer />
 
-                // Roadmap Container
-                <div class="roadmap-container">
-                    <RoadmapDiagram props=diagram_props />
+          // Backdrop (always mounted so the fade-out animation plays)
+          <div
+              class=move || {
+                  if is_drawer_open.get() {
+                      "drawer-backdrop drawer-backdrop--visible"
+                  } else {
+                      "drawer-backdrop"
+                  }
+              }
+              on:click=move |_| handle_close_detail.call(())
+          />
 
-                </div>
-            </main>
+          // Detail drawer — re-mounts whenever the selected topic changes
+          {move || {
+              let topic_id = selected_topic_id.get()?;
+              let content = get_topic_content(topic_id)?;
 
-            // Footer
-            <Footer />
+              // Look up the section label from static data
+              let section_label = static_topics
+                  .iter()
+                  .find(|t| t.id == topic_id)
+                  .and_then(|t| SECTIONS.iter().find(|s| s.id == t.section_id))
+                  .map(|s| s.title)
+                  .unwrap_or("");
 
-            // Drawer Backdrop (always mounted for fade-out animation)
-            <div
-                class=move || if is_drawer_open.get() { "drawer-backdrop drawer-backdrop--visible" } else { "drawer-backdrop" }
-                on:click=move |_| handle_close_detail.call(())
-            ></div>
-
-            // Drawer Content
-            {move || {
-                selected_content.get().map(|content| {
-                    view! {
-                        <TopicDetail
-                            content=content
-                            on_close=handle_close_detail
-                            is_open=is_drawer_open.get()
-                        />
-                    }
-                })
-            }}
-        </div>
-    }
+              Some(view! {
+                  <TopicDetail
+                      content=content
+                      on_close=handle_close_detail
+                      is_open=is_drawer_open.get()
+                      topic_id=topic_id
+                      section_label=section_label
+                  />
+              })
+          }}
+      </div>
+  }
 }

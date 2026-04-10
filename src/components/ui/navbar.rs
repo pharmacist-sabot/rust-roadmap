@@ -2,9 +2,9 @@ use leptos::*;
 
 #[component]
 pub fn Navbar() -> impl IntoView {
-    view! {
-        <nav>
-            "Rust Roadmap"
-        </nav>
-    }
+  view! {
+      <nav>
+          "Rust Roadmap"
+      </nav>
+  }
 }

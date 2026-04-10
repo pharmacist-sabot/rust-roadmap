@@ -1,0 +1,84 @@
+/**
+ * nodes.css - Node Status Variants
+ *
+ * Visual states for roadmap topic nodes: Done, InProgress, Skipped, Dimmed.
+ * These classes are applied in addition to the base `.roadmap-node` class.
+ */
+
+/* -----------------------------------------------------------------------------
+ * Done State — muted green tint
+ * -------------------------------------------------------------------------- */
+
+.node-done .node-rect {
+    fill: rgba(34, 197, 94, 0.12);
+    stroke: rgba(34, 197, 94, 0.55);
+    stroke-width: 1.5;
+}
+
+.node-done .node-text {
+    fill: #86efac;
+}
+
+/* -----------------------------------------------------------------------------
+ * In-Progress State — orange left accent
+ * -------------------------------------------------------------------------- */
+
+.node-in-progress .node-rect {
+    fill: rgba(249, 115, 22, 0.1);
+    stroke: var(--orange-500);
+    stroke-width: 2;
+}
+
+.node-in-progress .node-text {
+    fill: var(--orange-300);
+}
+
+.node-status-accent {
+    fill: var(--orange-500);
+}
+
+/* -----------------------------------------------------------------------------
+ * Skipped State — reduced opacity, muted colour
+ * -------------------------------------------------------------------------- */
+
+.node-skipped .node-rect {
+    fill: rgba(71, 85, 105, 0.15);
+    stroke: rgba(71, 85, 105, 0.4);
+}
+
+.node-skipped .node-text {
+    fill: var(--text-muted);
+    text-decoration: line-through;
+    opacity: 0.7;
+}
+
+/* -----------------------------------------------------------------------------
+ * Dimmed State — non-matching search results
+ * -------------------------------------------------------------------------- */
+
+.node-dimmed {
+    opacity: 0.2;
+    pointer-events: none;
+}
+
+/* -----------------------------------------------------------------------------
+ * Status Icon (checkmark etc.)
+ * -------------------------------------------------------------------------- */
+
+.node-status-icon {
+    fill: #86efac;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 0.65rem;
+    font-weight: 700;
+    pointer-events: none;
+}
+
+/* -----------------------------------------------------------------------------
+ * Reduced Motion
+ * -------------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+    .node-in-progress .node-rect {
+        animation: none;
+    }
+}

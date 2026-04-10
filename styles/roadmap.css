@@ -55,15 +55,19 @@
 .main-content {
     position: relative;
     z-index: var(--z-base);
-    padding-top: 8rem;
+    /* 7rem (~112px) clears the fixed header (brand row ~64px + progress bar ~20px) with breathing room */
+    padding-top: 7rem;
     padding-bottom: 8rem;
 }
 
 .roadmap-container {
-    max-width: 120rem;
+    width: 100%;
     margin: 0 auto;
-    padding: 0 var(--space-4);
+    padding: 0 var(--space-4) var(--space-8);
     overflow-x: auto;
+    overflow-y: visible;
+    /* Allow the SVG to determine its own width */
+    -webkit-overflow-scrolling: touch;
 }
 
 /* -----------------------------------------------------------------------------
@@ -96,9 +100,15 @@
 
 .roadmap-diagram {
     display: block;
-    margin: 0 auto;
-    max-width: 100%;
-    height: auto;
+    /* Do NOT constrain width — the SVG has explicit width/height attributes
+       and must be allowed to render at its natural pixel size so the
+       .roadmap-container overflow-x: auto scrollbar activates correctly. */
+}
+
+.roadmap-diagram--horizontal {
+    /* Ensure no accidental shrinking in flex/grid ancestors */
+    flex-shrink: 0;
+    min-width: max-content;
 }
 
 /* -----------------------------------------------------------------------------
@@ -230,7 +240,8 @@
 }
 
 @keyframes highlight-pulse {
-    0%, 100% {
+    0%,
+    100% {
         filter: drop-shadow(0 0 15px rgba(234, 88, 12, 0.8));
     }
     50% {
@@ -351,4 +362,35 @@
     .roadmap-container {
         padding: 0 var(--space-2);
     }
+}
+
+/* -----------------------------------------------------------------------------
+ * Horizontal Diagram Layout
+ * -------------------------------------------------------------------------- */
+
+.roadmap-diagram--horizontal {
+    overflow: visible;
+}
+
+/* -----------------------------------------------------------------------------
+ * Node Status Overrides (ensure status classes beat type-main/type-sub)
+ * -------------------------------------------------------------------------- */
+
+.roadmap-node.node-done.type-main .node-rect,
+.roadmap-node.node-done.type-sub .node-rect {
+    fill: rgba(34, 197, 94, 0.12);
+    stroke: rgba(34, 197, 94, 0.55);
+}
+
+.roadmap-node.node-in-progress.type-main .node-rect,
+.roadmap-node.node-in-progress.type-sub .node-rect {
+    fill: rgba(249, 115, 22, 0.1);
+    stroke: var(--orange-500);
+    stroke-width: 2;
+}
+
+.roadmap-node.node-skipped.type-main .node-rect,
+.roadmap-node.node-skipped.type-sub .node-rect {
+    fill: rgba(71, 85, 105, 0.15);
+    stroke: rgba(71, 85, 105, 0.4);
 }
