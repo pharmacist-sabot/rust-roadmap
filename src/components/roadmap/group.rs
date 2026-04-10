@@ -17,7 +17,7 @@ pub struct GroupBoxData {
 /// Renders an SVG group box with a coloured header bar and a title label.
 ///
 /// Structure:
-/// ```
+/// ```text
 /// ┌─────────────────────┐  ← header bar (orange tint)
 /// │  SECTION TITLE      │
 /// ├─────────────────────┤
