@@ -10,7 +10,7 @@ pub fn Footer() -> impl IntoView {
               </div>
               <div class="footer__links">
                   <a
-                      href="https://github.com/pharmacist-sabot/rust-roadmap"
+                      href="https://github.com/suradet-ps/rust-roadmap"
                       target="_blank"
                       rel="noopener noreferrer"
                       class="footer__link"

@@ -6,11 +6,11 @@
 [![Leptos](https://img.shields.io/badge/Leptos-0.6-FF8937)](https://leptos.dev/)
 [![WebAssembly](https://img.shields.io/badge/WebAssembly-654FF0?logo=webassembly&logoColor=white)](https://webassembly.org/)
 [![License](https://img.shields.io/badge/License-MIT-blue)](LICENSE)
-[![Deploy](https://img.shields.io/github/actions/workflow/status/pharmacist-sabot/rust-roadmap/deploy.yml?label=Deploy)](https://github.com/pharmacist-sabot/rust-roadmap/actions)
+[![Deploy](https://img.shields.io/github/actions/workflow/status/suradet-ps/rust-roadmap/deploy.yml?label=Deploy)](https://github.com/suradet-ps/rust-roadmap/actions)
 
 **An interactive, type-safe visualization of the Rust learning path.**
 
-[**View Live Demo →**](https://pharmacist-sabot.github.io/rust-roadmap/)
+[**View Live Demo →**](https://suradet-ps.github.io/rust-roadmap/)
 
 </div>
 
@@ -90,7 +90,7 @@ cargo install trunk
 
 ```bash
 # Clone the repository
-git clone https://github.com/pharmacist-sabot/rust-roadmap.git
+git clone https://github.com/suradet-ps/rust-roadmap.git
 cd rust-roadmap
 
 # Start development server with hot reload
@@ -219,6 +219,6 @@ This project is licensed under the **MIT License**. See [LICENSE](LICENSE) for d
 
 **Built with 🦀 by the Rust community**
 
-[Report Bug](https://github.com/pharmacist-sabot/rust-roadmap/issues) · [Request Feature](https://github.com/pharmacist-sabot/rust-roadmap/issues)
+[Report Bug](https://github.com/suradet-ps/rust-roadmap/issues) · [Request Feature](https://github.com/suradet-ps/rust-roadmap/issues)
 
 </div>
